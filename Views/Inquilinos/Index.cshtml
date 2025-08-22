@@ -7,7 +7,7 @@
 <h2>Inquilinos</h2>
 
 <p>
-    <a asp-action="Create" class="btn btn-primary">Nuevo Inquilino</a>
+    <a asp-action="Create" class="btn btn-primary">Nuevo Propietario</a>
 </p>
 
 <table class="table table-striped">
@@ -16,22 +16,35 @@
             <th>@Html.DisplayNameFor(m => m.First().Nombre)</th>
             <th>@Html.DisplayNameFor(m => m.First().Apellido)</th>
             <th>@Html.DisplayNameFor(m => m.First().Documento)</th>
+            <th>@Html.DisplayNameFor(m => m.First().Email)</th>
+            <th>@Html.DisplayNameFor(m => m.First().Direccion)</th> 
+            <th>@Html.DisplayNameFor(m => m.First().Telefono)</th>  
             <th></th>
         </tr>
     </thead>
     <tbody>
-    @foreach (var inq in Model)
+    @foreach (var p in Model)
     {
         <tr>
-            <td>@inq.Nombre</td>
-            <td>@inq.Apellido</td>
-            <td>@inq.Documento</td>
+            <td>@p.Nombre</td>
+            <td>@p.Apellido</td>
+            <td>@p.Documento</td>
+            <td>@p.Email</td>
+            <td>@p.Direccion</td> 
+            <td>@p.Telefono</td> 
             <td>
-                <a asp-action="Details" asp-route-id="@inq.IdInquilino">Detalles</a> |
-                <a asp-action="Edit" asp-route-id="@inq.IdInquilino">Editar</a> |
-                <a asp-action="Delete" asp-route-id="@inq.IdInquilino">Eliminar</a>
+                <a asp-action="Details" asp-route-id="@p.IdInquilino">Detalles</a> |
+                <a asp-action="Edit" asp-route-id="@p.IdInquilino">Editar</a> |
+                <a asp-action="Delete" asp-route-id="@p.IdInquilino">Eliminar</a>
             </td>
         </tr>
     }
     </tbody>
 </table>
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            $('#inquilinosTable').DataTable();
+        });
+    </script>
+}

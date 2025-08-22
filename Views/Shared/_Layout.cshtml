@@ -5,28 +5,55 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"]</title>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="~/css/site.css" />
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <style>
+        .sidebar {
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            z-index: 1000;
+        }
+        .content-wrapper {
+            margin-left: 25%;
+            padding-top: 20px;
+        }
+    </style>
 </head>
 <body>
     <div class="container-fluid">
         <div class="row">
             <!-- Sidebar lateral -->
-            <div class="col-md-3 bg-light p-3" style="height: 100vh;">
-                <h3>Inmobiliaria</h3>
+            <div class="col-md-3 sidebar bg-dark text-white p-3">
+                <h3 class="text-center">Gestionar Inmobiliaria</h3>
                 <ul class="nav flex-column">
                     <li class="nav-item">
-                        <a class="nav-link active" href="@Url.Action("Index", "Home")">Inicio</a>
+                        <a class="nav-link active text-white" href="@Url.Action("Index", "Home")">
+                            <i class="fas fa-home"></i> Inicio
+                        </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="@Url.Action("Index", "Propietarios")">Propietarios</a>
+                        <a class="nav-link text-white" href="@Url.Action("Index", "Propietarios")">
+                            <i class="fas fa-users"></i> Propietarios
+                        </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="@Url.Action("Index", "Inquilinos")">Inquilinos</a>
+                        <a class="nav-link text-white" href="@Url.Action("Index", "Inquilinos")">
+                            <i class="fas fa-building"></i> Inquilinos
+                        </a>
                     </li>
                 </ul>
             </div>
 
             <!-- Contenido principal -->
-            <div class="col-md-9 p-4">
+            <div class="col-md-9 content-wrapper">
+                <div class="jumbotron mt-5">
+                    <h1 class="display-4 text-center">Bienvenido a la Inmobiliaria</h1>
+                    <p class="lead text-center">Aquí podrás gestionar todos los aspectos relacionados con propietarios e inquilinos.</p>
+                </div>
                 @RenderBody()
             </div>
         </div>

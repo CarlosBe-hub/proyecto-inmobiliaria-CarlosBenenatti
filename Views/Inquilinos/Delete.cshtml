@@ -1,18 +1,24 @@
-@model ProyectoInmobiliaria.Models.Propietario
-
+@model ProyectoInmobiliaria.Models.Inquilino
 @{
-    ViewData["Title"] = "Eliminar Propietario";
+    Layout = "_Layout";
 }
 
-<h2>¿Estás seguro que querés eliminar este propietario?</h2>
+<div class="container mt-4">
+    <h2>Eliminar Inquilino</h2>
+    <h4>¿Estás seguro que deseas eliminar este inquilino?</h4>
 
-<div>
-    <h4>@Model.Nombre @Model.Apellido</h4>
-    <p>DNI: @Model.Documento</p>
+    <div class="alert alert-danger mt-3">
+        <p><strong>Nombre:</strong> @Model.Nombre</p>
+        <p><strong>Apellido:</strong> @Model.Apellido</p>
+        <p><strong>Documento:</strong> @Model.Documento</p>
+        <p><strong>Email:</strong> @Model.Email</p>
+        <p><strong>Teléfono:</strong> @Model.Telefono</p>
+        <p><strong>Dirección:</strong> @Model.Direccion</p>
+    </div>
+
+    <form asp-action="Delete" method="post">
+        <input type="hidden" asp-for="IdInquilino" />
+        <button type="submit" class="btn btn-danger">Eliminar</button>
+        <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
+    </form>
 </div>
-
-<form asp-action="DeleteConfirmed" method="post">
-    <input type="hidden" asp-for="IdPropietario" />
-    <button type="submit" class="btn btn-danger">Eliminar</button>
-    <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
-</form>

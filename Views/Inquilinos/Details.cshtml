@@ -1,23 +1,31 @@
-@model ProyectoInmobiliaria.Models.Propietario
-
+@model ProyectoInmobiliaria.Models.Inquilino
 @{
-    ViewData["Title"] = "Detalles Propietario";
+    Layout = "_Layout";
 }
 
-<h2>Detalles</h2>
+<div class="container mt-4">
+    <h2>Detalles del Inquilino</h2>
 
-<div>
     <dl class="row">
         <dt class="col-sm-2">Nombre</dt>
         <dd class="col-sm-10">@Model.Nombre</dd>
+
         <dt class="col-sm-2">Apellido</dt>
         <dd class="col-sm-10">@Model.Apellido</dd>
-        <dt class="col-sm-2">DNI</dt>
-        <dd class="col-sm-10">@Model.Documento</dd>
-    </dl>
-</div>
 
-<p>
-    <a asp-action="Edit" asp-route-id="@Model.IdPropietario" class="btn btn-warning">Editar</a>
+        <dt class="col-sm-2">Documento</dt>
+        <dd class="col-sm-10">@Model.Documento</dd>
+
+        <dt class="col-sm-2">Email</dt>
+        <dd class="col-sm-10">@Model.Email</dd>
+
+        <dt class="col-sm-2">Teléfono</dt>
+        <dd class="col-sm-10">@Model.Telefono</dd>
+
+        <dt class="col-sm-2">Dirección</dt>
+        <dd class="col-sm-10">@Model.Direccion</dd>
+    </dl>
+
+    <a asp-action="Edit" asp-route-id="@Model.IdInquilino" class="btn btn-warning">Editar</a>
     <a asp-action="Index" class="btn btn-secondary">Volver</a>
-</p>
+</div>
