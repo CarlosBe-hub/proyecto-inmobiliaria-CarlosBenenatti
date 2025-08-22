@@ -1,0 +1,41 @@
+@model ProyectoInmobiliaria.Models.Propietario
+@{
+    Layout = "_Layout";
+}
+
+<div class="container mt-4">
+    <h2>Crear Nuevo Propietario</h2>
+    <form method="post" asp-action="Create">
+        <div class="form-group">
+            <label for="Nombre">Nombre</label>
+            <input type="text" class="form-control" id="Nombre" name="Nombre" value="@Model.Nombre" required />
+        </div>
+
+        <div class="form-group">
+            <label for="Apellido">Apellido</label>
+            <input type="text" class="form-control" id="Apellido" name="Apellido" value="@Model.Apellido" required />
+        </div>
+
+        <div class="form-group">
+            <label for="Documento">Documento</label>
+            <input type="text" class="form-control" id="Documento" name="Documento" value="@Model.Documento" required />
+        </div>
+
+        <div class="form-group">
+            <label for="Email">Email</label>
+            <input type="email" class="form-control" id="Email" name="Email" value="@Model.Email" required />
+        </div>
+
+        <div class="form-group">
+            <label for="Telefono">Teléfono</label>
+            <input type="text" class="form-control" id="Telefono" name="Telefono" value="@Model.Telefono" required />
+        </div>
+
+        <div class="form-group">
+            <label for="Direccion">Dirección</label>
+            <input type="text" class="form-control" id="Direccion" name="Direccion" value="@Model.Direccion" />
+        </div>
+
+        <button type="submit" class="btn btn-primary mt-3">Guardar</button>
+    </form>
+</div>

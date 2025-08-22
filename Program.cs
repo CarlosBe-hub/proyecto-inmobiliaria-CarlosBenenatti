@@ -1,21 +1,37 @@
+using ProyectoInmobiliaria.Repository;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+// 1. Leer la cadena de conexión desde appsettings.json
+var connectionString = builder.Configuration.GetConnectionString("Inmobiliaria");
+
+// 2. Verificar que la cadena de conexión no sea nula o vacía
+if (string.IsNullOrEmpty(connectionString))
+{
+    throw new InvalidOperationException("La cadena de conexión 'Inmobiliaria' no está configurada.");
+}
+
+// 3. Registrar tus Repositories en el contenedor de dependencias
+builder.Services.AddScoped<IPropietarioRepository>(sp =>
+    new PropietarioRepository(connectionString));
+
+builder.Services.AddScoped<IInquilinoRepository>(sp =>
+    new InquilinoRepository(connectionString));
+
+// 4. Agregar MVC
 builder.Services.AddControllersWithViews();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// Configurar el pipeline de solicitudes HTTP
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 
 app.UseHttpsRedirection();
 app.UseRouting();
-
 app.UseAuthorization();
 
 app.MapStaticAssets();
@@ -24,6 +40,5 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}")
     .WithStaticAssets();
-
 
 app.Run();

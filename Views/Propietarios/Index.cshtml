@@ -1,0 +1,50 @@
+@model IEnumerable<ProyectoInmobiliaria.Models.Propietario>
+
+@{
+    ViewData["Title"] = "Propietarios";
+}
+
+<h2>Propietarios</h2>
+
+<p>
+    <a asp-action="Create" class="btn btn-primary">Nuevo Propietario</a>
+</p>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>@Html.DisplayNameFor(m => m.First().Nombre)</th>
+            <th>@Html.DisplayNameFor(m => m.First().Apellido)</th>
+            <th>@Html.DisplayNameFor(m => m.First().Documento)</th>
+            <th>@Html.DisplayNameFor(m => m.First().Email)</th>
+            <th>@Html.DisplayNameFor(m => m.First().Direccion)</th> 
+            <th>@Html.DisplayNameFor(m => m.First().Telefono)</th>  
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+    @foreach (var p in Model)
+    {
+        <tr>
+            <td>@p.Nombre</td>
+            <td>@p.Apellido</td>
+            <td>@p.Documento</td>
+            <td>@p.Email</td>
+            <td>@p.Direccion</td> 
+            <td>@p.Telefono</td> 
+            <td>
+                <a asp-action="Details" asp-route-id="@p.IdPropietario">Detalles</a> |
+                <a asp-action="Edit" asp-route-id="@p.IdPropietario">Editar</a> |
+                <a asp-action="Delete" asp-route-id="@p.IdPropietario">Eliminar</a>
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            $('#propietariosTable').DataTable();
+        });
+    </script>
+}
