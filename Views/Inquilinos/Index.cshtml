@@ -4,47 +4,56 @@
     ViewData["Title"] = "Inquilinos";
 }
 
-<h2>Inquilinos</h2>
+<h2 class="mb-4">Inquilinos</h2>
 
 <p>
-    <a asp-action="Create" class="btn btn-primary">Nuevo Propietario</a>
+    <a asp-action="Create" class="btn btn-primary">
+        <i class="bi bi-plus-circle"></i> Nuevo Inquilino
+    </a>
 </p>
 
-<table class="table table-striped">
-    <thead>
+<table id="inquilinosTable" class="table table-hover table-bordered align-middle">
+    <thead class="table-dark">
         <tr>
             <th>@Html.DisplayNameFor(m => m.First().Nombre)</th>
             <th>@Html.DisplayNameFor(m => m.First().Apellido)</th>
             <th>@Html.DisplayNameFor(m => m.First().Documento)</th>
-            <th>@Html.DisplayNameFor(m => m.First().Email)</th>
-            <th>@Html.DisplayNameFor(m => m.First().Direccion)</th> 
             <th>@Html.DisplayNameFor(m => m.First().Telefono)</th>  
-            <th></th>
+            <th class="text-center">Acciones</th>
         </tr>
     </thead>
     <tbody>
-    @foreach (var p in Model)
-    {
-        <tr>
-            <td>@p.Nombre</td>
-            <td>@p.Apellido</td>
-            <td>@p.Documento</td>
-            <td>@p.Email</td>
-            <td>@p.Direccion</td> 
-            <td>@p.Telefono</td> 
-            <td>
-                <a asp-action="Details" asp-route-id="@p.IdInquilino">Detalles</a> |
-                <a asp-action="Edit" asp-route-id="@p.IdInquilino">Editar</a> |
-                <a asp-action="Delete" asp-route-id="@p.IdInquilino">Eliminar</a>
-            </td>
-        </tr>
-    }
+        @foreach (var i in Model)
+        {
+            <tr>
+                <td>@i.Nombre</td>
+                <td>@i.Apellido</td>
+                <td>@i.Documento</td>
+                <td>@i.Telefono</td> 
+                <td class="text-center">
+                    <a asp-action="Details" asp-route-id="@i.IdInquilino" class="btn btn-info btn-sm text-white">
+                        <i class="bi bi-eye"></i> Detalles
+                    </a>
+                    <a asp-action="Edit" asp-route-id="@i.IdInquilino" class="btn btn-warning btn-sm text-dark">
+                        <i class="bi bi-pencil-square"></i> Editar
+                    </a>
+                    <a asp-action="Delete" asp-route-id="@i.IdInquilino" class="btn btn-danger btn-sm">
+                        <i class="bi bi-trash"></i> Eliminar
+                    </a>
+                </td>
+            </tr>
+        }
     </tbody>
 </table>
+
 @section Scripts {
     <script>
         $(document).ready(function () {
-            $('#inquilinosTable').DataTable();
+            $('#inquilinosTable').DataTable({
+                language: {
+                    url: "//cdn.datatables.net/plug-ins/1.11.5/i18n/es-ES.json"
+                }
+            });
         });
     </script>
 }

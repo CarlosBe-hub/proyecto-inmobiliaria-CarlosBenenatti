@@ -1,0 +1,20 @@
+@model ProyectoInmobiliaria.Models.Inmueble
+
+@{
+    ViewData["Title"] = "Editar Inmueble";
+}
+
+<h2>Editar Inmueble</h2>
+
+<form asp-action="Edit">
+    <input type="hidden" asp-for="IdInmueble" />
+
+    <partial name="Create" /> 
+
+    <button type="submit" class="btn btn-warning">
+        <i class="bi bi-pencil-square"></i> Guardar Cambios
+    </button>
+    <a asp-action="Index" class="btn btn-secondary">
+        <i class="bi bi-arrow-left-circle"></i> Volver
+    </a>
+</form>

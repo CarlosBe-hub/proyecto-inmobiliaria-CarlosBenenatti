@@ -10,5 +10,7 @@ namespace ProyectoInmobiliaria.Models
         public string? Email { get; set; }
         public string? Direccion { get; set; }
         public bool Baja { get; set; } = false;
+
+        public string NombreCompleto => $"{Nombre} {Apellido}";
     }
 }

@@ -21,7 +21,7 @@ namespace ProyectoInmobiliaria.Repository
             connection.Open();
 
             const string sql = @"INSERT INTO inquilino
-                (nombre, apellido, documento, telefono, email, direccion, baja)
+                (Nombre, Apellido, Documento, Telefono, Email, Direccion, Baja)
                 VALUES (@nombre,@apellido,@documento,@telefono,@email,@direccion,@baja);";
 
             using var cmd = new MySqlCommand(sql, connection);
@@ -44,7 +44,7 @@ namespace ProyectoInmobiliaria.Repository
             using var connection = new MySqlConnection(_connectionString);
             connection.Open();
 
-            const string sql = @"DELETE FROM inquilino WHERE id_inquilino=@id;";
+            const string sql = @"DELETE FROM inquilino WHERE IdInquilino=@id;";
             using var cmd = new MySqlCommand(sql, connection);
             cmd.Parameters.AddWithValue("@id", idInquilino);
 
@@ -57,9 +57,9 @@ namespace ProyectoInmobiliaria.Repository
             connection.Open();
 
             const string sql = @"UPDATE inquilino SET
-                nombre=@nombre, apellido=@apellido, documento=@documento,
-                telefono=@telefono, email=@email, direccion=@direccion, baja=@baja
-                WHERE id_inquilino=@id;";
+                Nombre=@nombre, Apellido=@apellido, Documento=@documento,
+                Telefono=@telefono, Email=@email, Direccion=@direccion, Baja=@baja
+                WHERE IdInquilino=@id;";
 
             using var cmd = new MySqlCommand(sql, connection);
             cmd.Parameters.AddWithValue("@nombre", inquilino.Nombre);
@@ -79,7 +79,7 @@ namespace ProyectoInmobiliaria.Repository
             using var connection = new MySqlConnection(_connectionString);
             connection.Open();
 
-            const string sql = @"SELECT * FROM inquilino WHERE id_inquilino=@id;";
+            const string sql = @"SELECT * FROM inquilino WHERE IdInquilino=@id;";
             using var cmd = new MySqlCommand(sql, connection);
             cmd.Parameters.AddWithValue("@id", idInquilino);
 
@@ -88,14 +88,14 @@ namespace ProyectoInmobiliaria.Repository
 
             return new Inquilino
             {
-                IdInquilino = rd.GetInt32("id_inquilino"),
-                Nombre      = rd.GetString("nombre"),
-                Apellido    = rd.GetString("apellido"),
-                Documento   = rd.GetString("documento"),
-                Telefono    = rd.IsDBNull(rd.GetOrdinal("telefono")) ? null : rd.GetString("telefono"),
-                Email       = rd.IsDBNull(rd.GetOrdinal("email"))    ? null : rd.GetString("email"),
-                Direccion   = rd.IsDBNull(rd.GetOrdinal("direccion"))? null : rd.GetString("direccion"),
-                Baja        = rd.GetBoolean("baja")
+                IdInquilino = rd.GetInt32("IdInquilino"),
+                Nombre      = rd.GetString("Nombre"),
+                Apellido    = rd.GetString("Apellido"),
+                Documento   = rd.GetString("Documento"),
+                Telefono    = rd.IsDBNull(rd.GetOrdinal("Telefono")) ? null : rd.GetString("Telefono"),
+                Email       = rd.IsDBNull(rd.GetOrdinal("Email"))    ? null : rd.GetString("Email"),
+                Direccion   = rd.IsDBNull(rd.GetOrdinal("Direccion"))? null : rd.GetString("Direccion"),
+                Baja        = rd.GetBoolean("Baja")
             };
         }
 
@@ -107,11 +107,11 @@ namespace ProyectoInmobiliaria.Repository
 
             var sql = "SELECT * FROM inquilino WHERE 1=1";
             if (!string.IsNullOrEmpty(filtro))
-                sql += " AND (nombre LIKE @f OR apellido LIKE @f OR documento LIKE @f)";
+                sql += " AND (Nombre LIKE @f OR Apellido LIKE @f OR Documento LIKE @f)";
             if (soloActivos.HasValue)
-                sql += " AND baja = @baja";
+                sql += " AND Baja = @baja";
 
-            sql += " ORDER BY apellido,nombre;";
+            sql += " ORDER BY Apellido,Nombre;";
 
             using var cmd = new MySqlCommand(sql, connection);
             if (!string.IsNullOrEmpty(filtro))
@@ -124,14 +124,14 @@ namespace ProyectoInmobiliaria.Repository
             {
                 lista.Add(new Inquilino
                 {
-                    IdInquilino = rd.GetInt32("id_inquilino"),
-                    Nombre      = rd.GetString("nombre"),
-                    Apellido    = rd.GetString("apellido"),
-                    Documento   = rd.GetString("documento"),
-                    Telefono    = rd.IsDBNull(rd.GetOrdinal("telefono")) ? null : rd.GetString("telefono"),
-                    Email       = rd.IsDBNull(rd.GetOrdinal("email"))    ? null : rd.GetString("email"),
-                    Direccion   = rd.IsDBNull(rd.GetOrdinal("direccion"))? null : rd.GetString("direccion"),
-                    Baja        = rd.GetBoolean("baja")
+                    IdInquilino = rd.GetInt32("IdInquilino"),
+                    Nombre      = rd.GetString("Nombre"),
+                    Apellido    = rd.GetString("Apellido"),
+                    Documento   = rd.GetString("Documento"),
+                    Telefono    = rd.IsDBNull(rd.GetOrdinal("Telefono")) ? null : rd.GetString("Telefono"),
+                    Email       = rd.IsDBNull(rd.GetOrdinal("Email"))    ? null : rd.GetString("Email"),
+                    Direccion   = rd.IsDBNull(rd.GetOrdinal("Direccion"))? null : rd.GetString("Direccion"),
+                    Baja        = rd.GetBoolean("Baja")
                 });
             }
 

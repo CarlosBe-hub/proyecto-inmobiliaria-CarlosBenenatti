@@ -1,0 +1,26 @@
+@model ProyectoInmobiliaria.Models.Inmueble
+
+@{
+    ViewData["Title"] = "Detalles Inmueble";
+}
+
+<h2>Detalles del Inmueble</h2>
+
+<div class="card">
+    <div class="card-body">
+        <h5 class="card-title">@Model.TipoInmueble</h5>
+        <p class="card-text"><strong>Dirección:</strong> @Model.Direccion</p>
+        <p class="card-text"><strong>Estado:</strong> @Model.Estado</p>
+        <p class="card-text"><strong>Ambientes:</strong> @Model.Ambientes</p>
+        <p class="card-text"><strong>Superficie:</strong> @Model.Superficie</p>
+        <p class="card-text"><strong>Precio:</strong> @Model.Precio?.ToString("C")</p>
+        <p class="card-text"><strong>Propietario:</strong> @Model.Propietario?.Nombre</p>
+    </div>
+</div>
+
+<a asp-action="Edit" asp-route-id="@Model.IdInmueble" class="btn btn-warning mt-3">
+    <i class="bi bi-pencil"></i> Editar
+</a>
+<a asp-action="Index" class="btn btn-secondary mt-3">
+    <i class="bi bi-arrow-left-circle"></i> Volver
+</a>

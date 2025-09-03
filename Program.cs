@@ -18,6 +18,10 @@ builder.Services.AddScoped<IPropietarioRepository>(sp =>
 builder.Services.AddScoped<IInquilinoRepository>(sp =>
     new InquilinoRepository(connectionString));
 
+// Registrar RepositorioInmueble 
+builder.Services.AddScoped<IInmuebleRepository>(sp =>
+    new RepositorioInmueble(builder.Configuration));
+
 // 4. Agregar MVC
 builder.Services.AddControllersWithViews();
 

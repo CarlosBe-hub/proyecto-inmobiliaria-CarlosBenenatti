@@ -1,4 +1,5 @@
-using ProyectoInmobiliaria.Models;
+using System.Collections.Generic;
+using ProyectoInmobiliaria.Models; 
 
 namespace ProyectoInmobiliaria.Repository
 {
@@ -9,5 +10,6 @@ namespace ProyectoInmobiliaria.Repository
         int Modificar(Inmueble inmueble);
         Inmueble? ObtenerPorId(int idInmueble);
         IList<Inmueble> Listar();
+        IList<Inmueble> BuscarPorPropietario(int propietarioId);
     }
 }

@@ -1,89 +1,142 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using ProyectoInmobiliaria.Models;
 using ProyectoInmobiliaria.Repository;
+using System.Linq;
 
 namespace ProyectoInmobiliaria.Controllers
 {
-    public class InmueblesController : Controller
+    public class InmuebleController : Controller
     {
-        private readonly IInmuebleRepository repo;
+        private readonly IInmuebleRepository _repo;
+        private readonly IPropietarioRepository _repoPropietario;
 
-        public InmueblesController()
+        public InmuebleController(IInmuebleRepository repo, IPropietarioRepository repoPropietario)
         {
-            string connectionString = "Server=localhost;Database=inmobiliaria;User=root;Password=;";
-            repo = new InmuebleRepository(connectionString);
+            _repo = repo;
+            _repoPropietario = repoPropietario;
         }
 
-        // GET: Inmuebles
+        // GET: Inmueble
         public IActionResult Index()
         {
-            var lista = repo.Listar();
+            var lista = _repo.Listar();
             return View(lista);
         }
 
-        // GET: Inmuebles/Detalles
+        // GET: Inmueble/Details/5
         public IActionResult Details(int id)
         {
-            var inmueble = repo.ObtenerPorId(id);
-            if (inmueble == null) return NotFound();
+            var inmueble = _repo.ObtenerPorId(id);
+            if (inmueble == null)
+            {
+                return NotFound();
+            }
+
+            // Validamos que PropietarioId tenga valor antes de llamar al repositorio
+            if (inmueble.PropietarioId.HasValue)
+            {
+                inmueble.Propietario = _repoPropietario.ObtenerPorId(inmueble.PropietarioId.Value);
+            }
+
             return View(inmueble);
         }
 
-        // GET: Inmuebles/Crear
+        // GET: Inmueble/Create
         public IActionResult Create()
         {
+            var propietarios = _repoPropietario.Listar()
+                .Select(p => new { p.IdPropietario, NombreCompleto = p.Apellido + ", " + p.Nombre });
+            ViewBag.Propietarios = new SelectList(propietarios, "IdPropietario", "NombreCompleto");
             return View();
         }
 
-        // POST: Inmuebles/Crear
+        // POST: Inmueble/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult Create(Inmueble inmueble)
         {
             if (ModelState.IsValid)
             {
-                repo.Alta(inmueble);
+                _repo.Alta(inmueble);
                 return RedirectToAction(nameof(Index));
             }
+
+            var propietarios = _repoPropietario.Listar()
+                .Select(p => new { p.IdPropietario, NombreCompleto = p.Apellido + ", " + p.Nombre });
+            ViewBag.Propietarios = new SelectList(propietarios, "IdPropietario", "NombreCompleto", inmueble.PropietarioId);
             return View(inmueble);
         }
 
-        // GET: Inmuebles/Editar
+        // GET: Inmueble/Edit/5
         public IActionResult Edit(int id)
         {
-            var inmueble = repo.ObtenerPorId(id);
-            if (inmueble == null) return NotFound();
+            var inmueble = _repo.ObtenerPorId(id);
+            if (inmueble == null)
+            {
+                return NotFound();
+            }
+
+            var propietarios = _repoPropietario.Listar()
+                .Select(p => new { p.IdPropietario, NombreCompleto = p.Apellido + ", " + p.Nombre });
+            ViewBag.Propietarios = new SelectList(propietarios, "IdPropietario", "NombreCompleto", inmueble.PropietarioId);
             return View(inmueble);
         }
 
-        // POST: Inmuebles/Editar
+        // POST: Inmueble/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Edit(Inmueble inmueble)
+        public IActionResult Edit(int id, Inmueble inmueble)
         {
+            if (id != inmueble.IdInmueble)
+            {
+                return BadRequest();
+            }
+
             if (ModelState.IsValid)
             {
-                repo.Modificar(inmueble);
+                _repo.Modificar(inmueble);
                 return RedirectToAction(nameof(Index));
             }
+
+            var propietarios = _repoPropietario.Listar()
+                .Select(p => new { p.IdPropietario, NombreCompleto = p.Apellido + ", " + p.Nombre });
+            ViewBag.Propietarios = new SelectList(propietarios, "IdPropietario", "NombreCompleto", inmueble.PropietarioId);
             return View(inmueble);
         }
 
-        // GET: Inmuebles/Eliminar
+        // GET: Inmueble/Delete/5
         public IActionResult Delete(int id)
         {
-            var inmueble = repo.ObtenerPorId(id);
-            if (inmueble == null) return NotFound();
+            var inmueble = _repo.ObtenerPorId(id);
+            if (inmueble == null)
+            {
+                return NotFound();
+            }
+
+            // Validamos que PropietarioId tenga valor antes de llamar al repositorio
+            if (inmueble.PropietarioId.HasValue)
+            {
+                inmueble.Propietario = _repoPropietario.ObtenerPorId(inmueble.PropietarioId.Value);
+            }
+
             return View(inmueble);
         }
 
-        // POST: Inmuebles/Eliminar
+        // POST: Inmueble/DeleteConfirmed/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public IActionResult DeleteConfirmed(int id)
         {
-            repo.Baja(id);
+            _repo.Baja(id);
             return RedirectToAction(nameof(Index));
+        }
+
+        // GET: Inmueble/PorPropietario/5
+        public IActionResult PorPropietario(int id)
+        {
+            var lista = _repo.BuscarPorPropietario(id);
+            return View("Index", lista);
         }
     }
 }
