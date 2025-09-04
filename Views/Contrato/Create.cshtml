@@ -1,0 +1,46 @@
+@model ProyectoInmobiliaria.Models.Contrato
+
+@{
+    ViewData["Title"] = "Crear Contrato";
+}
+
+<h2 class="mb-4">Crear Contrato</h2>
+
+<form asp-action="Create">
+    <div class="mb-3">
+        <label asp-for="FechaInicio" class="form-label"></label>
+        <input asp-for="FechaInicio" class="form-control" />
+        <span asp-validation-for="FechaInicio" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="FechaFin" class="form-label"></label>
+        <input asp-for="FechaFin" class="form-control" />
+        <span asp-validation-for="FechaFin" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Monto" class="form-label"></label>
+        <input asp-for="Monto" class="form-control" />
+        <span asp-validation-for="Monto" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="InmuebleId" class="form-label"></label>
+        <select asp-for="InmuebleId" asp-items="ViewBag.Inmuebles" class="form-select"></select>
+        <span asp-validation-for="InmuebleId" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="InquilinoId" class="form-label"></label>
+        <select asp-for="InquilinoId" asp-items="ViewBag.Inquilinos" class="form-select"></select>
+        <span asp-validation-for="InquilinoId" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-success"><i class="bi bi-check-circle"></i> Guardar</button>
+    <a asp-action="Index" class="btn btn-secondary"><i class="bi bi-arrow-left"></i> Volver</a>
+</form>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

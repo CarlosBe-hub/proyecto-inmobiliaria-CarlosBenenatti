@@ -1,0 +1,13 @@
+@model int
+@{
+    ViewData["Title"] = "Error " + Model;
+    Layout = "_Layout"; 
+}
+
+<div class="text-center mt-5">
+    <h1 class="display-4 text-danger">Error @Model</h1>
+    <h3>@ViewBag.Titulo</h3>
+    <p>@ViewBag.ErrorMessage</p>
+
+    <a class="btn btn-primary mt-3" href="/">Volver al inicio</a>
+</div>

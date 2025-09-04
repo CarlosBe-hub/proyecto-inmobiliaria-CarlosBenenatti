@@ -40,5 +40,7 @@ namespace ProyectoInmobiliaria.Models
         [ForeignKey(nameof(PropietarioId))]
         [BindNever]
         public Propietario? Propietario { get; set; }
+
+        
     }
 }

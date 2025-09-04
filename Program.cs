@@ -22,6 +22,10 @@ builder.Services.AddScoped<IInquilinoRepository>(sp =>
 builder.Services.AddScoped<IInmuebleRepository>(sp =>
     new RepositorioInmueble(builder.Configuration));
 
+// Registrar RepositorioContrato
+builder.Services.AddScoped<IContratoRepository>(sp =>
+    new ContratoRepository(builder.Configuration));
+
 // 4. Agregar MVC
 builder.Services.AddControllersWithViews();
 
@@ -30,9 +34,12 @@ var app = builder.Build();
 // Configurar el pipeline de solicitudes HTTP
 if (!app.Environment.IsDevelopment())
 {
-    app.UseExceptionHandler("/Home/Error");
+    app.UseExceptionHandler("/Error/500"); // Captura errores 500
     app.UseHsts();
 }
+
+// Captura códigos de estado como 404, 403, etc. y redirige a ErrorController
+app.UseStatusCodePagesWithReExecute("/Error/{0}");
 
 app.UseHttpsRedirection();
 app.UseRouting();

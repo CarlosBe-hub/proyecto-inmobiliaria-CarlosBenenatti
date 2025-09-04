@@ -1,0 +1,61 @@
+@model IEnumerable<ProyectoInmobiliaria.Models.Contrato>
+
+@{
+    ViewData["Title"] = "Contratos";
+}
+
+<h2 class="mb-4">Contratos</h2>
+
+<p>
+    <a asp-action="Create" class="btn btn-success">
+        <i class="bi bi-plus-circle"></i> + Nuevo Contrato
+    </a>
+</p>
+
+<table id="contratosTable" class="table table-hover table-bordered align-middle">
+    <thead class="table-dark">
+        <tr>
+            <th>@Html.DisplayNameFor(m => m.First().FechaInicio)</th>
+            <th>@Html.DisplayNameFor(m => m.First().FechaFin)</th>
+            <th>@Html.DisplayNameFor(m => m.First().Monto)</th>
+            <th>Inmueble</th>
+            <th>Inquilino</th>
+            <th class="text-center">Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.FechaInicio.ToShortDateString()</td>
+                <td>@item.FechaFin.ToShortDateString()</td>
+                <td>@item.Monto.ToString("C")</td>
+                <td>@item.Inmueble?.Direccion</td>
+                <td>@item.Inquilino?.Nombre @item.Inquilino?.Apellido</td>
+                <td class="text-center">
+                    <a asp-action="Details" asp-route-id="@item.IdContrato" class="btn btn-info btn-sm text-white">
+                        <i class="bi bi-eye"></i> Detalles
+                    </a>
+                    <a asp-action="Edit" asp-route-id="@item.IdContrato" class="btn btn-warning btn-sm text-dark">
+                        <i class="bi bi-pencil-square"></i> Editar
+                    </a>
+                    <a asp-action="Delete" asp-route-id="@item.IdContrato" class="btn btn-danger btn-sm">
+                        <i class="bi bi-trash"></i> Eliminar
+                    </a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            $('#contratosTable').DataTable({
+                language: {
+                    url: "//cdn.datatables.net/plug-ins/1.11.5/i18n/es-ES.json"
+                }
+            });
+        });
+    </script>
+}
