@@ -9,6 +9,6 @@ namespace ProyectoInmobiliaria.Repository
         void Modificar(Contrato contrato);
         Contrato? ObtenerPorId(int id);
         IList<Contrato> Listar();
-        bool ExisteOcupacion(int inmuebleId, DateTime fechaInicio, DateTime fechaFin);
+        bool ExisteOcupacion(int inmuebleId, DateTime fechaInicio, DateTime fechaFin, int? idContratoExcluir = null);
     }
 }

@@ -158,13 +158,14 @@ namespace ProyectoInmobiliaria.Repository
         }
 
         // Validar ocupación de inmueble en rango de fechas
-        public bool ExisteOcupacion(int inmuebleId, DateTime fechaInicio, DateTime fechaFin)
+        public bool ExisteOcupacion(int inmuebleId, DateTime fechaInicio, DateTime fechaFin, int? idContratoExcluir = null)
         {
             using (var conn = GetConnection())
             {
                 var sql = @"SELECT COUNT(*) 
                             FROM contratos 
                             WHERE InmuebleId = @inmuebleId
+                              AND (@idContrato IS NULL OR IdContrato <> @idContrato)
                               AND (
                                     (@fechaInicio BETWEEN FechaInicio AND FechaFin)
                                  OR (@fechaFin BETWEEN FechaInicio AND FechaFin)
@@ -176,6 +177,7 @@ namespace ProyectoInmobiliaria.Repository
                     cmd.Parameters.AddWithValue("@inmuebleId", inmuebleId);
                     cmd.Parameters.AddWithValue("@fechaInicio", fechaInicio);
                     cmd.Parameters.AddWithValue("@fechaFin", fechaFin);
+                    cmd.Parameters.AddWithValue("@idContrato", (object?)idContratoExcluir ?? DBNull.Value);
 
                     var result = Convert.ToInt32(cmd.ExecuteScalar());
                     return result > 0;

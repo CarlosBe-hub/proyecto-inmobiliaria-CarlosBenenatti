@@ -14,7 +14,10 @@ namespace ProyectoInmobiliaria.Controllers
         private readonly IInquilinoRepository _repoInquilino;
         private readonly IInmuebleRepository _repoInmueble;
 
-        public ContratoController(IContratoRepository repo, IInquilinoRepository repoInquilino, IInmuebleRepository repoInmueble)
+        public ContratoController(
+            IContratoRepository repo,
+            IInquilinoRepository repoInquilino,
+            IInmuebleRepository repoInmueble)
         {
             _repo = repo;
             _repoInquilino = repoInquilino;
@@ -90,15 +93,6 @@ namespace ProyectoInmobiliaria.Controllers
             var contrato = _repo.ObtenerPorId(id);
             if (contrato == null) return NotFound();
 
-            var inquilinos = _repoInquilino.Listar()
-                .Select(i => new { i.IdInquilino, NombreCompleto = i.Nombre + " " + i.Apellido })
-                .ToList();
-
-            var inmuebles = _repoInmueble.Listar();
-
-            ViewBag.Inquilinos = new SelectList(inquilinos, "IdInquilino", "NombreCompleto", contrato.InquilinoId);
-            ViewBag.Inmuebles = new SelectList(inmuebles, "IdInmueble", "Direccion", contrato.InmuebleId);
-
             return View("Edit", contrato);
         }
 
@@ -114,7 +108,8 @@ namespace ProyectoInmobiliaria.Controllers
                 ModelState.AddModelError("", "La fecha de inicio debe ser anterior a la fecha de fin.");
             }
 
-            if (_repo.ExisteOcupacion(contrato.InmuebleId, contrato.FechaInicio, contrato.FechaFin))
+            // Excluir el contrato actual en la validación
+            if (_repo.ExisteOcupacion(contrato.InmuebleId, contrato.FechaInicio, contrato.FechaFin, contrato.IdContrato))
             {
                 ModelState.AddModelError("", "El inmueble ya está ocupado en ese rango de fechas.");
             }
@@ -159,15 +154,17 @@ namespace ProyectoInmobiliaria.Controllers
         public IActionResult Active()
         {
             var lista = _repo.Listar()
-                             .Where(c => c.FechaInicio <= DateTime.Today && c.FechaFin >= DateTime.Today)
-                             .ToList();
+                .Where(c => c.FechaInicio <= DateTime.Today && c.FechaFin >= DateTime.Today)
+                .ToList();
             return View("Index", lista);
         }
 
         // GET: Contrato/ByTenant
         public IActionResult ByTenant(int tenantId)
         {
-            var lista = _repo.Listar().Where(c => c.InquilinoId == tenantId).ToList();
+            var lista = _repo.Listar()
+                .Where(c => c.InquilinoId == tenantId)
+                .ToList();
             return View("Index", lista);
         }
 
@@ -178,7 +175,10 @@ namespace ProyectoInmobiliaria.Controllers
                 .Where(i => i.PropietarioId == ownerId)
                 .Select(i => i.IdInmueble);
 
-            var lista = _repo.Listar().Where(c => inmuebles.Contains(c.InmuebleId)).ToList();
+            var lista = _repo.Listar()
+                .Where(c => inmuebles.Contains(c.InmuebleId))
+                .ToList();
+
             return View("Index", lista);
         }
     }

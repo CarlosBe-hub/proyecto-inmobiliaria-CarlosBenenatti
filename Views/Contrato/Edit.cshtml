@@ -8,11 +8,13 @@
 
 <form asp-action="Edit">
     <input type="hidden" asp-for="IdContrato" />
+    <input type="hidden" asp-for="InmuebleId" />
+    <input type="hidden" asp-for="InquilinoId" />
+    <input type="hidden" asp-for="FechaInicio" />
 
     <div class="mb-3">
-        <label asp-for="FechaInicio" class="form-label"></label>
-        <input asp-for="FechaInicio" class="form-control" />
-        <span asp-validation-for="FechaInicio" class="text-danger"></span>
+        <label class="form-label">Fecha de Inicio</label>
+        <input class="form-control" value="@Model.FechaInicio.ToString("dd/MM/yyyy")" readonly />
     </div>
 
     <div class="mb-3">
@@ -28,19 +30,21 @@
     </div>
 
     <div class="mb-3">
-        <label asp-for="InmuebleId" class="form-label"></label>
-        <select asp-for="InmuebleId" asp-items="ViewBag.InmuebleId" class="form-select"></select>
-        <span asp-validation-for="InmuebleId" class="text-danger"></span>
+        <label class="form-label">Inmueble</label>
+        <input class="form-control" value="@Model.Inmueble?.Direccion" readonly />
     </div>
 
     <div class="mb-3">
-        <label asp-for="InquilinoId" class="form-label"></label>
-        <select asp-for="InquilinoId" asp-items="ViewBag.InquilinoId" class="form-select"></select>
-        <span asp-validation-for="InquilinoId" class="text-danger"></span>
+        <label class="form-label">Inquilino</label>
+        <input class="form-control" value="@($"{Model.Inquilino?.Nombre} {Model.Inquilino?.Apellido}")" readonly />
     </div>
 
-    <button type="submit" class="btn btn-warning"><i class="bi bi-pencil-square"></i> Guardar Cambios</button>
-    <a asp-action="Index" class="btn btn-secondary"><i class="bi bi-arrow-left"></i> Volver</a>
+    <button type="submit" class="btn btn-warning">
+        <i class="bi bi-pencil-square"></i> Guardar Cambios
+    </button>
+    <a asp-action="Index" class="btn btn-secondary">
+        <i class="bi bi-arrow-left"></i> Volver
+    </a>
 </form>
 
 @section Scripts {
