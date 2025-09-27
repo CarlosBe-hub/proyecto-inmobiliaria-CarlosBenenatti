@@ -4,7 +4,22 @@
     ViewData["Title"] = "Eliminar Inmueble";
 }
 
-<h2>¿Está seguro que desea eliminar este inmueble?</h2>
+<h2 class="mb-4">¿Está seguro que desea eliminar este inmueble?</h2>
+
+<!-- Mostrar mensajes de error o éxito -->
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">
+        @TempData["Error"]
+    </div>
+}
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">
+        @TempData["Success"]
+    </div>
+}
 
 <div class="alert alert-danger">
     <p><strong>Dirección:</strong> @Model.Direccion</p>
@@ -12,9 +27,9 @@
     <p><strong>Propietario:</strong> @Model.Propietario?.Nombre</p>
 </div>
 
-<form asp-action="DeleteConfirmed">
+<form asp-action="Delete" method="post">
     <input type="hidden" asp-for="IdInmueble" />
-    <button type="submit" class="btn btn-danger">
+    <button type="submit" class="btn btn-danger me-2">
         <i class="bi bi-trash"></i> Eliminar
     </button>
     <a asp-action="Index" class="btn btn-secondary">

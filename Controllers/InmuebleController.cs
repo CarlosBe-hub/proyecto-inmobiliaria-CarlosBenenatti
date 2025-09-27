@@ -10,11 +10,13 @@ namespace ProyectoInmobiliaria.Controllers
     {
         private readonly IInmuebleRepository _repo;
         private readonly IPropietarioRepository _repoPropietario;
+        private readonly IContratoRepository _repoContrato;
 
-        public InmuebleController(IInmuebleRepository repo, IPropietarioRepository repoPropietario)
+        public InmuebleController(IInmuebleRepository repo, IPropietarioRepository repoPropietario, IContratoRepository repoContrato)
         {
             _repo = repo;
             _repoPropietario = repoPropietario;
+            _repoContrato = repoContrato;
         }
 
         // GET: Inmueble
@@ -33,7 +35,6 @@ namespace ProyectoInmobiliaria.Controllers
                 return NotFound();
             }
 
-            // Validamos que PropietarioId tenga valor antes de llamar al repositorio
             if (inmueble.PropietarioId.HasValue)
             {
                 inmueble.Propietario = _repoPropietario.ObtenerPorId(inmueble.PropietarioId.Value);
@@ -114,7 +115,6 @@ namespace ProyectoInmobiliaria.Controllers
                 return NotFound();
             }
 
-            // Validamos que PropietarioId tenga valor antes de llamar al repositorio
             if (inmueble.PropietarioId.HasValue)
             {
                 inmueble.Propietario = _repoPropietario.ObtenerPorId(inmueble.PropietarioId.Value);
@@ -128,7 +128,16 @@ namespace ProyectoInmobiliaria.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult DeleteConfirmed(int id)
         {
+            var contratos = _repoContrato.BuscarPorInmueble(id);
+
+            if (contratos != null && contratos.Any())
+            {
+                TempData["Error"] = "⚠️ No se puede eliminar el inmueble porque tiene contratos asociados. Debe dar de baja primero esos contratos.";
+                return RedirectToAction(nameof(Index));
+            }
+
             _repo.Baja(id);
+            TempData["Success"] = "✅ El inmueble fue eliminado correctamente.";
             return RedirectToAction(nameof(Index));
         }
 

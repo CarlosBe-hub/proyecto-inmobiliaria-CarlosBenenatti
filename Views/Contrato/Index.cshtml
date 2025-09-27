@@ -49,11 +49,39 @@
 </table>
 
 @section Scripts {
+    <!-- jQuery completo (NO usar slim) -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <!-- DataTables CSS y JS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+
+    <!-- Inicialización de DataTables -->
     <script>
         $(document).ready(function () {
             $('#contratosTable').DataTable({
+                responsive: true,
                 language: {
-                    url: "//cdn.datatables.net/plug-ins/1.11.5/i18n/es-ES.json"
+                    decimal: ",",
+                    thousands: ".",
+                    lengthMenu: "Mostrar _MENU_ registros",
+                    zeroRecords: "No se encontraron resultados",
+                    info: "Mostrando _START_ a _END_ de _TOTAL_ registros",
+                    infoEmpty: "Mostrando 0 a 0 de 0 registros",
+                    infoFiltered: "(filtrado de _MAX_ registros totales)",
+                    search: "Buscar:",
+                    loadingRecords: "Cargando...",
+                    processing: "Procesando...",
+                    paginate: {
+                        first: "Primero",
+                        last: "Último",
+                        next: "Siguiente",
+                        previous: "Anterior"
+                    },
+                    aria: {
+                        sortAscending: ": activar para ordenar ascendente",
+                        sortDescending: ": activar para ordenar descendente"
+                    }
                 }
             });
         });

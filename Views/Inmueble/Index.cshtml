@@ -6,6 +6,21 @@
 
 <h2 class="mb-4">Inmuebles</h2>
 
+<!-- Mostrar mensajes de error o éxito -->
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">
+        @TempData["Error"]
+    </div>
+}
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">
+        @TempData["Success"]
+    </div>
+}
+
 <p>
     <a asp-action="Create" class="btn btn-success">
         <i class="bi bi-plus-circle"></i> + Nuevo Inmueble
@@ -19,7 +34,7 @@
             <th>@Html.DisplayNameFor(m => m.First().TipoInmueble)</th>
             <th>@Html.DisplayNameFor(m => m.First().Estado)</th>
             <th>@Html.DisplayNameFor(m => m.First().Precio)</th>
-            <th>Propietario</th> <!-- Cambie el encabezado -->
+            <th>Propietario</th> <!-- Cambié el encabezado -->
             <th class="text-center">Acciones</th>
         </tr>
     </thead>
@@ -49,11 +64,13 @@
 </table>
 
 @section Scripts {
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script> <!-- Incluye la versión completa de jQuery -->
+    <script src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.min.js"></script> <!-- DataTables JS -->
     <script>
         $(document).ready(function () {
             $('#inmueblesTable').DataTable({
                 language: {
-                    url: "//cdn.datatables.net/plug-ins/1.11.5/i18n/es-ES.json"
+                    url: "https://cdn.datatables.net/plug-ins/1.11.5/i18n/es-ES.json" <!-- Corrección de la URL -->
                 }
             });
         });
