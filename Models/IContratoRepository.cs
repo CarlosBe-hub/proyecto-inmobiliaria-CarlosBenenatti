@@ -14,5 +14,7 @@ namespace ProyectoInmobiliaria.Repository
 
         // Método para validar contratos asociados a un inmueble
         IList<Contrato> BuscarPorInmueble(int inmuebleId);
+
+         (IList<Contrato> Contratos, int TotalCount) ListarPaginado(int pageNumber, int pageSize);
     }
 }

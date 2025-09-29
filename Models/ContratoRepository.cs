@@ -157,6 +157,69 @@ namespace ProyectoInmobiliaria.Repository
             return lista;
         }
 
+        // Listar paginado
+        public (IList<Contrato> Contratos, int TotalCount) ListarPaginado(int pageNumber, int pageSize)
+        {
+            var lista = new List<Contrato>();
+            int totalCount = 0;
+
+            using (var conn = GetConnection())
+            {
+                // Total de registros
+                var sqlCount = "SELECT COUNT(*) FROM contratos";
+                using (var cmdCount = new MySqlCommand(sqlCount, conn))
+                {
+                    totalCount = Convert.ToInt32(cmdCount.ExecuteScalar());
+                }
+
+                // Registros con LIMIT y OFFSET
+                var sql = @"SELECT c.IdContrato, c.FechaInicio, c.FechaFin, c.Monto, 
+                                   c.InmuebleId, c.InquilinoId,
+                                   i.Direccion, q.Nombre, q.Apellido
+                            FROM contratos c
+                            INNER JOIN inmueble i ON c.InmuebleId = i.id_inmueble
+                            INNER JOIN inquilino q ON c.InquilinoId = q.IdInquilino
+                            ORDER BY c.IdContrato DESC
+                            LIMIT @limit OFFSET @offset";
+
+                using (var cmd = new MySqlCommand(sql, conn))
+                {
+                    cmd.Parameters.AddWithValue("@limit", pageSize);
+                    cmd.Parameters.AddWithValue("@offset", (pageNumber - 1) * pageSize);
+
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            var contrato = new Contrato
+                            {
+                                IdContrato = reader.GetInt32("IdContrato"),
+                                FechaInicio = reader.GetDateTime("FechaInicio"),
+                                FechaFin = reader.GetDateTime("FechaFin"),
+                                Monto = reader.GetDecimal("Monto"),
+                                InmuebleId = reader.GetInt32("InmuebleId"),
+                                InquilinoId = reader.GetInt32("InquilinoId"),
+                                Inmueble = new Inmueble
+                                {
+                                    IdInmueble = reader.GetInt32("InmuebleId"),
+                                    Direccion = reader.GetString("Direccion")
+                                },
+                                Inquilino = new Inquilino
+                                {
+                                    IdInquilino = reader.GetInt32("InquilinoId"),
+                                    Nombre = reader.GetString("Nombre"),
+                                    Apellido = reader.GetString("Apellido")
+                                }
+                            };
+                            lista.Add(contrato);
+                        }
+                    }
+                }
+            }
+
+            return (lista, totalCount);
+        }
+
         // Validar ocupación de inmueble en rango de fechas
         public bool ExisteOcupacion(int inmuebleId, DateTime fechaInicio, DateTime fechaFin, int? idContratoExcluir = null)
         {
@@ -185,7 +248,7 @@ namespace ProyectoInmobiliaria.Repository
             }
         }
 
-        // Método: buscar contratos por inmueble
+        // Buscar contratos por inmueble
         public IList<Contrato> BuscarPorInmueble(int inmuebleId)
         {
             var lista = new List<Contrato>();

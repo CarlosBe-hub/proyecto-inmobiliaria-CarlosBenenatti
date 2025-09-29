@@ -2,6 +2,12 @@
 
 @{
     ViewData["Title"] = "Inmuebles";
+
+    // Lista de estados 
+    var estados = new List<string> { "Disponible", "En Mantenimiento"}; 
+    var estadoSeleccionado = ViewBag.EstadoSeleccionado as string;
+    int paginaActual = ViewBag.PaginaActual ?? 1;
+    int totalPaginas = ViewBag.TotalPaginas ?? 1;
 }
 
 <h2 class="mb-4">Inmuebles</h2>
@@ -27,14 +33,37 @@
     </a>
 </p>
 
-<table id="inmueblesTable" class="table table-hover table-bordered align-middle">
+<!-- Filtro por estado -->
+<div class="mb-3">
+    <label><strong>Filtrar por estado:</strong></label><br />
+    <form asp-action="Index" method="get" class="d-inline">
+        <select name="estado" class="form-select d-inline w-auto">
+            <option value="">-- Todos --</option>
+            @foreach (var estado in estados)
+            {
+                if (estado == estadoSeleccionado)
+                {
+                    <option value="@estado" selected="selected">@estado</option>
+                }
+                else
+                {
+                    <option value="@estado">@estado</option>
+                }
+            }
+        </select>
+        <button type="submit" class="btn btn-primary btn-sm">Filtrar</button>
+        <a asp-action="Index" class="btn btn-secondary btn-sm">Limpiar</a>
+    </form>
+</div>
+
+<table class="table table-hover table-bordered align-middle">
     <thead class="table-dark">
         <tr>
             <th>@Html.DisplayNameFor(m => m.First().Direccion)</th>
             <th>@Html.DisplayNameFor(m => m.First().TipoInmueble)</th>
             <th>@Html.DisplayNameFor(m => m.First().Estado)</th>
             <th>@Html.DisplayNameFor(m => m.First().Precio)</th>
-            <th>Propietario</th> <!-- Cambié el encabezado -->
+            <th>Propietario</th>
             <th class="text-center">Acciones</th>
         </tr>
     </thead>
@@ -46,7 +75,7 @@
                 <td>@item.TipoInmueble</td>
                 <td>@item.Estado</td>
                 <td>@item.Precio?.ToString("C")</td>
-                <td>@item.Propietario?.NombreCompleto</td> <!-- Ahora usa NombreCompleto -->
+                <td>@item.Propietario?.NombreCompleto</td>
                 <td class="text-center">
                     <a asp-action="Details" asp-route-id="@item.IdInmueble" class="btn btn-info btn-sm text-white">
                         <i class="bi bi-eye"></i> Detalles
@@ -63,16 +92,21 @@
     </tbody>
 </table>
 
-@section Scripts {
-    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script> <!-- Incluye la versión completa de jQuery -->
-    <script src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.min.js"></script> <!-- DataTables JS -->
-    <script>
-        $(document).ready(function () {
-            $('#inmueblesTable').DataTable({
-                language: {
-                    url: "https://cdn.datatables.net/plug-ins/1.11.5/i18n/es-ES.json" <!-- Corrección de la URL -->
-                }
-            });
-        });
-    </script>
-}
+<!-- Paginación -->
+<nav>
+    <ul class="pagination">
+        <li class="page-item @(paginaActual == 1 ? "disabled" : "")">
+            <a class="page-link" asp-action="Index" asp-route-pagina="@(paginaActual - 1)" asp-route-estado="@estadoSeleccionado">Anterior</a>
+        </li>
+        @for (int i = 1; i <= totalPaginas; i++)
+        {
+            <li class="page-item @(i == paginaActual ? "active" : "")">
+                <a class="page-link" asp-action="Index" asp-route-pagina="@i" asp-route-estado="@estadoSeleccionado">@i</a>
+            </li>
+        }
+        <li class="page-item @(paginaActual == totalPaginas ? "disabled" : "")">
+            <a class="page-link" asp-action="Index" asp-route-pagina="@(paginaActual + 1)" asp-route-estado="@estadoSeleccionado">Siguiente</a>
+        </li>
+    </ul>
+</nav>
+

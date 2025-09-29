@@ -1,0 +1,43 @@
+@model ProyectoInmobiliaria.Models.Pago
+
+@{
+    ViewData["Title"] = "Detalle del Pago";
+}
+
+<h2 class="mb-4">Detalle del Pago</h2>
+
+<div class="card">
+    <div class="card-header">
+        Pago Nº @Model.NumeroPago
+    </div>
+    <div class="card-body">
+        <dl class="row">
+            <dt class="col-sm-3">ID Pago</dt>
+            <dd class="col-sm-9">@Model.IdPago</dd>
+
+            <dt class="col-sm-3">ID Contrato</dt>
+            <dd class="col-sm-9">@Model.IdContrato</dd>
+
+            <dt class="col-sm-3">Método de Pago</dt>
+            <dd class="col-sm-9">@Model.MetodoPago</dd>
+
+            <dt class="col-sm-3">Fecha de Pago</dt>
+            <dd class="col-sm-9">@Model.FechaPago.ToString("dd/MM/yyyy")</dd>
+
+            <dt class="col-sm-3">Monto</dt>
+            <dd class="col-sm-9">$ @Model.Monto.ToString("N2")</dd>
+
+            <dt class="col-sm-3">Detalle</dt>
+            <dd class="col-sm-9">@Model.Detalle ?? "Sin detalle"</dd>
+
+            <dt class="col-sm-3">Estado</dt>
+            <dd class="col-sm-9">
+                @(Model.Anulado ? "<span class='text-danger'>Anulado</span>" : "<span class='text-success'>Activo</span>")
+            </dd>
+        </dl>
+    </div>
+    <div class="card-footer">
+        <a asp-action="Edit" asp-route-id="@Model.IdPago" class="btn btn-primary">Editar</a>
+        <a asp-action="Index" class="btn btn-secondary">← Volver a lista</a>
+    </div>
+</div>

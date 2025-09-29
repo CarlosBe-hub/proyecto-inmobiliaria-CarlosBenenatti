@@ -1,0 +1,40 @@
+@model ProyectoInmobiliaria.Models.Pago
+
+@{
+    ViewData["Title"] = "Editar Pago";
+}
+
+<h2>Editar Pago</h2>
+
+<form asp-action="Edit" method="post">
+    <input type="hidden" asp-for="IdPago" />
+    <input type="hidden" asp-for="IdContrato" />
+
+    <div class="form-group">
+        <label>N° Pago</label>
+        <input asp-for="NumeroPago" class="form-control" readonly />
+    </div>
+
+    <div class="form-group">
+        <label>Fecha</label>
+        <input asp-for="FechaPago" class="form-control" type="date" />
+    </div>
+
+    <div class="form-group">
+        <label>Monto</label>
+        <input asp-for="Monto" class="form-control" readonly />
+    </div>
+
+    <div class="form-group">
+        <label>Método de Pago</label>
+        <input asp-for="MetodoPago" class="form-control" />
+    </div>
+
+    <div class="form-group">
+        <label>Detalle</label>
+        <textarea asp-for="Detalle" class="form-control"></textarea>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Guardar cambios</button>
+    <a asp-action="Index" asp-route-idContrato="@Model.IdContrato" class="btn btn-secondary">Cancelar</a>
+</form>

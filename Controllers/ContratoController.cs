@@ -25,10 +25,17 @@ namespace ProyectoInmobiliaria.Controllers
         }
 
         // GET: Contrato
-        public IActionResult Index()
+        public IActionResult Index(int pageNumber = 1, int pageSize = 5)
         {
-            var lista = _repo.Listar();
-            return View(lista);
+            var (contratos, totalCount) = _repo.ListarPaginado(pageNumber, pageSize);
+
+            var totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
+
+            ViewBag.PageNumber = pageNumber;
+            ViewBag.PageSize = pageSize;
+            ViewBag.TotalPages = totalPages;
+
+            return View(contratos);
         }
 
         // GET: Contrato/Detalle
@@ -151,25 +158,43 @@ namespace ProyectoInmobiliaria.Controllers
         }
 
         // GET: Contrato/Active
-        public IActionResult Active()
+        public IActionResult Active(int pageNumber = 1, int pageSize = 5)
         {
             var lista = _repo.Listar()
                 .Where(c => c.FechaInicio <= DateTime.Today && c.FechaFin >= DateTime.Today)
                 .ToList();
-            return View("Index", lista);
+
+            var totalCount = lista.Count;
+            var totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
+            var contratosPaginados = lista.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToList();
+
+            ViewBag.PageNumber = pageNumber;
+            ViewBag.PageSize = pageSize;
+            ViewBag.TotalPages = totalPages;
+
+            return View("Index", contratosPaginados);
         }
 
         // GET: Contrato/ByTenant
-        public IActionResult ByTenant(int tenantId)
+        public IActionResult ByTenant(int tenantId, int pageNumber = 1, int pageSize = 5)
         {
             var lista = _repo.Listar()
                 .Where(c => c.InquilinoId == tenantId)
                 .ToList();
-            return View("Index", lista);
+
+            var totalCount = lista.Count;
+            var totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
+            var contratosPaginados = lista.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToList();
+
+            ViewBag.PageNumber = pageNumber;
+            ViewBag.PageSize = pageSize;
+            ViewBag.TotalPages = totalPages;
+
+            return View("Index", contratosPaginados);
         }
 
         // GET: Contrato/ByOwner
-        public IActionResult ByOwner(int ownerId)
+        public IActionResult ByOwner(int ownerId, int pageNumber = 1, int pageSize = 5)
         {
             var inmuebles = _repoInmueble.Listar()
                 .Where(i => i.PropietarioId == ownerId)
@@ -179,7 +204,15 @@ namespace ProyectoInmobiliaria.Controllers
                 .Where(c => inmuebles.Contains(c.InmuebleId))
                 .ToList();
 
-            return View("Index", lista);
+            var totalCount = lista.Count;
+            var totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
+            var contratosPaginados = lista.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToList();
+
+            ViewBag.PageNumber = pageNumber;
+            ViewBag.PageSize = pageSize;
+            ViewBag.TotalPages = totalPages;
+
+            return View("Index", contratosPaginados);
         }
     }
 }

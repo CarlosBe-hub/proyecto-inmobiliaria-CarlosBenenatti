@@ -12,7 +12,12 @@ namespace ProyectoInmobiliaria.Controllers
         private readonly IPropietarioRepository _repoPropietario;
         private readonly IContratoRepository _repoContrato;
 
-        public InmuebleController(IInmuebleRepository repo, IPropietarioRepository repoPropietario, IContratoRepository repoContrato)
+        private const int TamPagina = 10; // cantidad de registros por página
+
+        public InmuebleController(
+            IInmuebleRepository repo,
+            IPropietarioRepository repoPropietario,
+            IContratoRepository repoContrato)
         {
             _repo = repo;
             _repoPropietario = repoPropietario;
@@ -20,9 +25,23 @@ namespace ProyectoInmobiliaria.Controllers
         }
 
         // GET: Inmueble
-        public IActionResult Index()
+        public IActionResult Index(string estado, int pagina = 1)
         {
-            var lista = _repo.Listar();
+            var lista = _repo.Listar(pagina, TamPagina);
+
+            if (!string.IsNullOrEmpty(estado))
+            {
+                lista = lista.Where(i => i.Estado == estado).ToList();
+            }
+
+            ViewBag.EstadoSeleccionado = estado;
+            ViewBag.PaginaActual = pagina;
+            ViewBag.TamPagina = TamPagina;
+
+            // Podrías obtener el total de registros para calcular páginas
+            var totalRegistros = _repo.Listar().Count;
+            ViewBag.TotalPaginas = (int)Math.Ceiling((double)totalRegistros / TamPagina);
+
             return View(lista);
         }
 
@@ -149,3 +168,4 @@ namespace ProyectoInmobiliaria.Controllers
         }
     }
 }
+

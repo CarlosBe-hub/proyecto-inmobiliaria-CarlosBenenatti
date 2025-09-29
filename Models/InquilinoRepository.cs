@@ -22,7 +22,8 @@ namespace ProyectoInmobiliaria.Repository
 
             const string sql = @"INSERT INTO inquilino
                 (Nombre, Apellido, Documento, Telefono, Email, Direccion, Baja)
-                VALUES (@nombre,@apellido,@documento,@telefono,@email,@direccion,@baja);";
+                VALUES (@nombre,@apellido,@documento,@telefono,@email,@direccion,@baja);
+                SELECT LAST_INSERT_ID();";
 
             using var cmd = new MySqlCommand(sql, connection);
             cmd.Parameters.AddWithValue("@nombre", inquilino.Nombre);
@@ -33,8 +34,8 @@ namespace ProyectoInmobiliaria.Repository
             cmd.Parameters.AddWithValue("@direccion", (object?)inquilino.Direccion ?? DBNull.Value);
             cmd.Parameters.AddWithValue("@baja", inquilino.Baja);
 
-            cmd.ExecuteNonQuery();
-            id = (int)cmd.LastInsertedId;
+            id = Convert.ToInt32(cmd.ExecuteScalar());
+            inquilino.IdInquilino = id;
 
             return id;
         }
@@ -99,6 +100,7 @@ namespace ProyectoInmobiliaria.Repository
             };
         }
 
+        // Listar sin paginación (según la interfaz)
         public IList<Inquilino> Listar(string? filtro = null, bool? soloActivos = null)
         {
             var lista = new List<Inquilino>();
@@ -111,13 +113,56 @@ namespace ProyectoInmobiliaria.Repository
             if (soloActivos.HasValue)
                 sql += " AND Baja = @baja";
 
-            sql += " ORDER BY Apellido,Nombre;";
+            sql += " ORDER BY Apellido, Nombre;";
 
             using var cmd = new MySqlCommand(sql, connection);
             if (!string.IsNullOrEmpty(filtro))
                 cmd.Parameters.AddWithValue("@f", $"%{filtro}%");
             if (soloActivos.HasValue)
                 cmd.Parameters.AddWithValue("@baja", !soloActivos.Value ? 1 : 0);
+
+            using var rd = cmd.ExecuteReader();
+            while (rd.Read())
+            {
+                lista.Add(new Inquilino
+                {
+                    IdInquilino = rd.GetInt32("IdInquilino"),
+                    Nombre      = rd.GetString("Nombre"),
+                    Apellido    = rd.GetString("Apellido"),
+                    Documento   = rd.GetString("Documento"),
+                    Telefono    = rd.IsDBNull(rd.GetOrdinal("Telefono")) ? null : rd.GetString("Telefono"),
+                    Email       = rd.IsDBNull(rd.GetOrdinal("Email"))    ? null : rd.GetString("Email"),
+                    Direccion   = rd.IsDBNull(rd.GetOrdinal("Direccion"))? null : rd.GetString("Direccion"),
+                    Baja        = rd.GetBoolean("Baja")
+                });
+            }
+
+            return lista;
+        }
+
+        // Listar con paginación (extra)
+        public IList<Inquilino> Listar(int pagina, int tamPagina, string? filtro = null, bool? soloActivos = null)
+        {
+            var lista = new List<Inquilino>();
+            using var connection = new MySqlConnection(_connectionString);
+            connection.Open();
+
+            var sql = "SELECT * FROM inquilino WHERE 1=1";
+            if (!string.IsNullOrEmpty(filtro))
+                sql += " AND (Nombre LIKE @f OR Apellido LIKE @f OR Documento LIKE @f)";
+            if (soloActivos.HasValue)
+                sql += " AND Baja = @baja";
+
+            sql += " ORDER BY Apellido, Nombre LIMIT @limit OFFSET @offset;";
+
+            using var cmd = new MySqlCommand(sql, connection);
+            if (!string.IsNullOrEmpty(filtro))
+                cmd.Parameters.AddWithValue("@f", $"%{filtro}%");
+            if (soloActivos.HasValue)
+                cmd.Parameters.AddWithValue("@baja", !soloActivos.Value ? 1 : 0);
+
+            cmd.Parameters.AddWithValue("@limit", tamPagina);
+            cmd.Parameters.AddWithValue("@offset", (pagina - 1) * tamPagina);
 
             using var rd = cmd.ExecuteReader();
             while (rd.Read())

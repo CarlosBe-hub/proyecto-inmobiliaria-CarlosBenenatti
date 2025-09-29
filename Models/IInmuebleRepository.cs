@@ -10,6 +10,9 @@ namespace ProyectoInmobiliaria.Repository
         int Modificar(Inmueble inmueble);
         Inmueble? ObtenerPorId(int idInmueble);
         IList<Inmueble> Listar();
+
+        IList<Inmueble> Listar(int pagina, int tamPagina);
+        
         IList<Inmueble> BuscarPorPropietario(int propietarioId);
     }
 }

@@ -119,7 +119,8 @@ namespace ProyectoInmobiliaria.Repository
             return inmueble;
         }
 
-        public IList<Inmueble> Listar()
+        // Listar sin paginación
+        public IList<Inmueble> Listar()    
         {
             var res = new List<Inmueble>();
             using (var connection = GetConnection())
@@ -131,6 +132,53 @@ namespace ProyectoInmobiliaria.Repository
                             INNER JOIN Propietario p ON i.propietario_id = p.id_propietario";
                 using (var command = new MySqlCommand(sql, connection))
                 {
+                    using (var reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            var inmueble = new Inmueble
+                            {
+                                IdInmueble = reader.GetInt32("id_inmueble"),
+                                Direccion = reader.GetString("direccion"),
+                                TipoInmueble = reader.GetString("tipo_inmueble"),
+                                Estado = reader.GetString("estado"),
+                                Ambientes = reader.GetInt32("ambientes"),
+                                Superficie = reader.GetInt32("superficie"),
+                                Precio = reader.GetDecimal("precio"),
+                                PropietarioId = reader.GetInt32("propietario_id"),
+                                Propietario = new Propietario
+                                {
+                                    IdPropietario = reader.GetInt32("id_propietario"),
+                                    Nombre = reader.GetString("nombre"),
+                                    Apellido = reader.GetString("apellido")
+                                }
+                            };
+                            res.Add(inmueble);
+                        }
+                    }
+                }
+            }
+            return res;
+        }
+
+        // Listar con paginación
+        public IList<Inmueble> Listar(int pagina, int tamPagina)
+        {
+            var res = new List<Inmueble>();
+            using (var connection = GetConnection())
+            {
+                var sql = @"SELECT i.id_inmueble, i.direccion, i.tipo_inmueble, i.estado, i.ambientes, 
+                                   i.superficie, i.precio, i.propietario_id,
+                                   p.id_propietario, p.nombre, p.apellido
+                            FROM Inmueble i 
+                            INNER JOIN Propietario p ON i.propietario_id = p.id_propietario
+                            LIMIT @limit OFFSET @offset";
+
+                using (var command = new MySqlCommand(sql, connection))
+                {
+                    command.Parameters.AddWithValue("@limit", tamPagina);
+                    command.Parameters.AddWithValue("@offset", (pagina - 1) * tamPagina);
+
                     using (var reader = command.ExecuteReader())
                     {
                         while (reader.Read())

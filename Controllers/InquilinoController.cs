@@ -7,6 +7,7 @@ namespace ProyectoInmobiliaria.Controllers
     public class InquilinosController : Controller
     {
         private readonly IInquilinoRepository _repo;
+        private const int TamPagina = 10; // cantidad de registros por página
 
         public InquilinosController(IInquilinoRepository repo)
         {
@@ -14,9 +15,16 @@ namespace ProyectoInmobiliaria.Controllers
         }
 
         // GET: Inquilinos
-        public IActionResult Index(string? q, bool? activos)
+        public IActionResult Index(string? q, bool? activos, int pagina = 1)
         {
-            var lista = _repo.Listar(q, activos);
+            var lista = _repo.Listar(pagina, TamPagina, q, activos);
+
+            // ViewBag para que la vista pueda mostrar el estado actual
+            ViewBag.Filtro = q;
+            ViewBag.Activos = activos;
+            ViewBag.PaginaActual = pagina;
+            ViewBag.TamPagina = TamPagina;
+
             return View(lista);
         }
 
