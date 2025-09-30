@@ -13,8 +13,8 @@ namespace ProyectoInmobiliaria.Repository
             using (var conn = GetConnection())
             {
                 var sql = @"INSERT INTO contratos 
-                            (FechaInicio, FechaFin, Monto, InmuebleId, InquilinoId) 
-                            VALUES (@inicio, @fin, @monto, @inmuebleId, @inquilinoId)";
+                            (FechaInicio, FechaFin, Monto, InmuebleId, InquilinoId, Estado) 
+                            VALUES (@inicio, @fin, @monto, @inmuebleId, @inquilinoId, @estado)";
                 using (var cmd = new MySqlCommand(sql, conn))
                 {
                     cmd.Parameters.AddWithValue("@inicio", contrato.FechaInicio);
@@ -22,6 +22,7 @@ namespace ProyectoInmobiliaria.Repository
                     cmd.Parameters.AddWithValue("@monto", contrato.Monto);
                     cmd.Parameters.AddWithValue("@inmuebleId", contrato.InmuebleId);
                     cmd.Parameters.AddWithValue("@inquilinoId", contrato.InquilinoId);
+                    cmd.Parameters.AddWithValue("@estado", contrato.Estado ?? "Activo");
                     cmd.ExecuteNonQuery();
                     contrato.IdContrato = (int)cmd.LastInsertedId;
                 }
@@ -48,8 +49,12 @@ namespace ProyectoInmobiliaria.Repository
             using (var conn = GetConnection())
             {
                 var sql = @"UPDATE contratos 
-                            SET FechaInicio = @inicio, FechaFin = @fin, 
-                                Monto = @monto, InmuebleId = @inmuebleId, InquilinoId = @inquilinoId 
+                            SET FechaInicio = @inicio, 
+                                FechaFin = @fin, 
+                                Monto = @monto, 
+                                InmuebleId = @inmuebleId, 
+                                InquilinoId = @inquilinoId,
+                                Estado = @estado
                             WHERE IdContrato = @id";
                 using (var cmd = new MySqlCommand(sql, conn))
                 {
@@ -58,6 +63,7 @@ namespace ProyectoInmobiliaria.Repository
                     cmd.Parameters.AddWithValue("@monto", contrato.Monto);
                     cmd.Parameters.AddWithValue("@inmuebleId", contrato.InmuebleId);
                     cmd.Parameters.AddWithValue("@inquilinoId", contrato.InquilinoId);
+                    cmd.Parameters.AddWithValue("@estado", contrato.Estado);
                     cmd.Parameters.AddWithValue("@id", contrato.IdContrato);
                     cmd.ExecuteNonQuery();
                 }
@@ -71,7 +77,7 @@ namespace ProyectoInmobiliaria.Repository
             using (var conn = GetConnection())
             {
                 var sql = @"SELECT c.IdContrato, c.FechaInicio, c.FechaFin, c.Monto, 
-                                   c.InmuebleId, c.InquilinoId,
+                                   c.InmuebleId, c.InquilinoId, c.Estado,
                                    i.Direccion, q.Nombre, q.Apellido
                             FROM contratos c
                             INNER JOIN inmueble i ON c.InmuebleId = i.id_inmueble
@@ -92,6 +98,7 @@ namespace ProyectoInmobiliaria.Repository
                                 Monto = reader.GetDecimal("Monto"),
                                 InmuebleId = reader.GetInt32("InmuebleId"),
                                 InquilinoId = reader.GetInt32("InquilinoId"),
+                                Estado = reader.GetString("Estado"),
                                 Inmueble = new Inmueble
                                 {
                                     IdInmueble = reader.GetInt32("InmuebleId"),
@@ -118,7 +125,7 @@ namespace ProyectoInmobiliaria.Repository
             using (var conn = GetConnection())
             {
                 var sql = @"SELECT c.IdContrato, c.FechaInicio, c.FechaFin, c.Monto, 
-                                   c.InmuebleId, c.InquilinoId,
+                                   c.InmuebleId, c.InquilinoId, c.Estado,
                                    i.Direccion, q.Nombre, q.Apellido
                             FROM contratos c
                             INNER JOIN inmueble i ON c.InmuebleId = i.id_inmueble
@@ -137,6 +144,7 @@ namespace ProyectoInmobiliaria.Repository
                                 Monto = reader.GetDecimal("Monto"),
                                 InmuebleId = reader.GetInt32("InmuebleId"),
                                 InquilinoId = reader.GetInt32("InquilinoId"),
+                                Estado = reader.GetString("Estado"),
                                 Inmueble = new Inmueble
                                 {
                                     IdInmueble = reader.GetInt32("InmuebleId"),
@@ -174,7 +182,7 @@ namespace ProyectoInmobiliaria.Repository
 
                 // Registros con LIMIT y OFFSET
                 var sql = @"SELECT c.IdContrato, c.FechaInicio, c.FechaFin, c.Monto, 
-                                   c.InmuebleId, c.InquilinoId,
+                                   c.InmuebleId, c.InquilinoId, c.Estado,
                                    i.Direccion, q.Nombre, q.Apellido
                             FROM contratos c
                             INNER JOIN inmueble i ON c.InmuebleId = i.id_inmueble
@@ -199,6 +207,7 @@ namespace ProyectoInmobiliaria.Repository
                                 Monto = reader.GetDecimal("Monto"),
                                 InmuebleId = reader.GetInt32("InmuebleId"),
                                 InquilinoId = reader.GetInt32("InquilinoId"),
+                                Estado = reader.GetString("Estado"),
                                 Inmueble = new Inmueble
                                 {
                                     IdInmueble = reader.GetInt32("InmuebleId"),
@@ -255,7 +264,7 @@ namespace ProyectoInmobiliaria.Repository
             using (var conn = GetConnection())
             {
                 var sql = @"SELECT c.IdContrato, c.FechaInicio, c.FechaFin, c.Monto, 
-                                   c.InmuebleId, c.InquilinoId,
+                                   c.InmuebleId, c.InquilinoId, c.Estado,
                                    i.Direccion, q.Nombre, q.Apellido
                             FROM contratos c
                             INNER JOIN inmueble i ON c.InmuebleId = i.id_inmueble
@@ -276,6 +285,7 @@ namespace ProyectoInmobiliaria.Repository
                                 Monto = reader.GetDecimal("Monto"),
                                 InmuebleId = reader.GetInt32("InmuebleId"),
                                 InquilinoId = reader.GetInt32("InquilinoId"),
+                                Estado = reader.GetString("Estado"),
                                 Inmueble = new Inmueble
                                 {
                                     IdInmueble = reader.GetInt32("InmuebleId"),

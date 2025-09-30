@@ -19,11 +19,20 @@ namespace ProyectoInmobiliaria.Models
         [Display(Name = "Fecha de Fin")]
         public DateTime FechaFin { get; set; }
 
+        [DataType(DataType.Date)]
+        [Display(Name = "Fecha Fin Anticipada")]
+        public DateTime? FechaFinAnticipada { get; set; }
+
         [Required(ErrorMessage = "El monto mensual es obligatorio")]
         [Range(1, double.MaxValue, ErrorMessage = "El monto debe ser mayor que 0")]
         [DataType(DataType.Currency)]
         [Display(Name = "Monto Mensual")]
         public decimal Monto { get; set; }
+
+        [Required]
+        [StringLength(20)]
+        [Display(Name = "Estado del Contrato")]
+        public string Estado { get; set; } = "Activo";
 
         // Relación con Inmueble
         [Required(ErrorMessage = "Debe seleccionar un inmueble")]
@@ -52,6 +61,14 @@ namespace ProyectoInmobiliaria.Models
                     "La fecha de inicio debe ser menor que la fecha de finalización.",
                     new[] { nameof(FechaInicio), nameof(FechaFin) });
             }
+
+            if (FechaFinAnticipada.HasValue && FechaFinAnticipada < FechaInicio)
+            {
+                yield return new ValidationResult(
+                    "La fecha fin anticipada no puede ser menor que la fecha de inicio.",
+                    new[] { nameof(FechaFinAnticipada) });
+            }
         }
     }
 }
+

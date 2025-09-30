@@ -11,6 +11,40 @@
 
 <h2 class="mb-4">Pagos del Contrato @idContrato</h2>
 
+<!-- Mensaje temporal de éxito -->
+@if (TempData["SuccessMessage"] != null)
+{
+    <div id="alertaExito" class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<!-- Mensaje temporal de error -->
+@if (TempData["ErrorMessage"] != null)
+{
+    <div id="alertaError" class="alert alert-danger alert-dismissible fade show" role="alert">
+        @TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<script>
+    setTimeout(function () {
+        var alertaExito = document.getElementById("alertaExito");
+        if (alertaExito) {
+            alertaExito.classList.remove("show");
+            alertaExito.classList.add("fade");
+        }
+
+        var alertaError = document.getElementById("alertaError");
+        if (alertaError) {
+            alertaError.classList.remove("show");
+            alertaError.classList.add("fade");
+        }
+    }, 3000); // 3 segundos
+</script>
+
 <!-- Resumen de pagos -->
 <div class="alert alert-info">
     <strong>Total esperado:</strong> @totalEsperado <br />
@@ -83,7 +117,7 @@
                 <a asp-action="Edit" asp-route-id="@item.IdPago" class="btn btn-warning btn-sm text-dark">
                     <i class="bi bi-pencil-square"></i> Editar
                 </a>
-                <a asp-action="Anular" asp-route-id="@item.IdPago" class="btn btn-danger btn-sm">
+                <a asp-action="Delete" asp-route-id="@item.IdPago" class="btn btn-danger btn-sm">
                     <i class="bi bi-x-circle"></i> Anular
                 </a>
             </td>

@@ -12,6 +12,28 @@
 
 <h2 class="mb-4">Contratos</h2>
 
+<!-- Mensajes de exito / error -->
+@if (TempData["Error"] != null)
+{
+    <div id="alert-error" class="alert alert-danger text-center">
+        @TempData["Error"]
+    </div>
+}
+
+@if (TempData["Success"] != null)
+{
+    <div id="alert-success" class="alert alert-success text-center">
+        @TempData["Success"]
+    </div>
+}
+
+<script>
+    setTimeout(() => {
+        document.getElementById("alert-success")?.remove();
+        document.getElementById("alert-error")?.remove();
+    }, 3000);
+</script>
+
 <p>
     <a asp-action="Create" class="btn btn-primary">
         <i class="bi bi-plus-circle"></i> + Nuevo Contrato
@@ -51,12 +73,19 @@
                     <a asp-action="Index" asp-controller="Pago" asp-route-idContrato="@c.IdContrato" class="btn btn-secondary btn-sm">
                         <i class="bi bi-credit-card"></i> Ver Pagos
                     </a>
-                    @* Botón Renovar solo si el contrato es renovable *@
+
+                    <!-- 🔹 Botón Renovar siempre visible -->
                     @if (renovables.ContainsKey(c.IdContrato) && renovables[c.IdContrato])
                     {
                         <a asp-action="Renovar" asp-route-id="@c.IdContrato" class="btn btn-success btn-sm">
                             <i class="bi bi-arrow-repeat"></i> Renovar
                         </a>
+                    }
+                    else
+                    {
+                        <button class="btn btn-success btn-sm" disabled title="Este contrato no puede renovarse">
+                            <i class="bi bi-arrow-repeat"></i> Renovar
+                        </button>
                     }
                 </td>
             </tr>
