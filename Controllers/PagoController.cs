@@ -1,106 +1,135 @@
 using Microsoft.AspNetCore.Mvc;
 using ProyectoInmobiliaria.Models;
 using ProyectoInmobiliaria.Repository;
+using System.Linq;
 
 namespace ProyectoInmobiliaria.Controllers
 {
     public class PagoController : Controller
     {
-        private readonly IPagoRepository pagoRepo;
-        private readonly IContratoRepository contratoRepo; 
+        private readonly IPagoRepository _repoPago;
+        private readonly IContratoRepository _repoContrato;
 
-        public PagoController(IPagoRepository pagoRepo, IContratoRepository contratoRepo) 
+        public PagoController(IPagoRepository repoPago, IContratoRepository repoContrato)
         {
-            this.pagoRepo = pagoRepo;
-            this.contratoRepo = contratoRepo;
+            _repoPago = repoPago;
+            _repoContrato = repoContrato;
         }
 
-        // Lista todos los pagos de un contrato
+        // GET: Pago/Index/5
         public IActionResult Index(int idContrato)
         {
-            var lista = pagoRepo.ObtenerPorContrato(idContrato);
-            ViewBag.IdContrato = idContrato;
-            return View(lista);
+            var pagos = _repoPago.ObtenerPorContrato(idContrato);
+            var contrato = _repoContrato.ObtenerPorId(idContrato);
+
+            if (contrato == null) return NotFound();
+
+            // Calcular meses del contrato
+            var totalMeses = ((contrato.FechaFin.Year - contrato.FechaInicio.Year) * 12) +
+                             (contrato.FechaFin.Month - contrato.FechaInicio.Month);
+
+            // Asegurar mínimo 6 pagos
+            if (totalMeses < 6)
+                totalMeses = 6;
+
+            var pagosRealizados = pagos.Count(p => p.Pagado && !p.Anulado);
+            var pagosFaltantes = totalMeses - pagosRealizados;
+
+            ViewBag.Contrato = contrato;
+            ViewBag.TotalEsperado = totalMeses;
+            ViewBag.PagosRealizados = pagosRealizados;
+            ViewBag.PagosFaltantes = pagosFaltantes;
+
+            return View(pagos);
         }
 
-        // GET: Crear Pago
+        // GET: Pago/Create
         public IActionResult Create(int idContrato)
         {
-            var contrato = contratoRepo.ObtenerPorId(idContrato); 
-            if (contrato == null)
-            {
-                return NotFound();
-            }
+            var contrato = _repoContrato.ObtenerPorId(idContrato);
+            if (contrato == null) return NotFound();
 
-            var nuevo = new Pago
+            var numeroPago = _repoPago.ObtenerUltimoNumeroPago(idContrato) + 1;
+
+            var pago = new Pago
             {
                 IdContrato = idContrato,
-                FechaPago = DateTime.Now,
-                NumeroPago = pagoRepo.ObtenerUltimoNumeroPago(idContrato) + 1,
-                Monto = contrato.Monto // <<--- autocompleta el monto
+                NumeroPago = numeroPago,
+                FechaPago = DateTime.Today,
+                Monto = contrato.Monto,
+                Pagado = true,   // <-- ya lo dejamos marcado
+                Anulado = false  // <-- nunca nulo por defecto
             };
-            return View(nuevo);
+
+            return View(pago);
         }
 
-        // POST: Crear Pago
+        // POST: Pago/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult Create(Pago pago)
         {
             if (ModelState.IsValid)
             {
-                pagoRepo.Alta(pago);
+                pago.Pagado = true;   // <-- forzamos a pagado
+                pago.Anulado = false; // <-- siempre no anulado
+
+                _repoPago.Alta(pago);
                 return RedirectToAction(nameof(Index), new { idContrato = pago.IdContrato });
             }
+
             return View(pago);
         }
 
-        // GET: Editar Pago
+        // GET: Pago/Edit
         public IActionResult Edit(int id)
         {
-            var pago = pagoRepo.ObtenerPorId(id);
-            if (pago == null)
-            {
-                return NotFound();
-            }
+            var pago = _repoPago.ObtenerPorId(id);
+            if (pago == null) return NotFound();
+
             return View(pago);
         }
 
-        // POST: Editar Pago
+        // POST: Pago/Edit
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Edit(Pago pago)
+        public IActionResult Edit(int id, Pago pago)
         {
+            if (id != pago.IdPago) return BadRequest();
+
             if (ModelState.IsValid)
             {
-                pagoRepo.Modificar(pago);
+                pago.Pagado = true;   // <-- siempre mantener pagado
+                pago.Anulado = false; // <-- y no anulado salvo acción especial
+
+                _repoPago.Modificar(pago);
                 return RedirectToAction(nameof(Index), new { idContrato = pago.IdContrato });
             }
+
             return View(pago);
         }
 
-        // Anular pago (soft delete)
-        public IActionResult Anular(int id)
+        // GET: Pago/Delete
+        public IActionResult Delete(int id)
         {
-            var pago = pagoRepo.ObtenerPorId(id);
-            if (pago == null)
-            {
-                return NotFound();
-            }
+            var pago = _repoPago.ObtenerPorId(id);
+            if (pago == null) return NotFound();
 
-            pagoRepo.Baja(id);
+            return View(pago);
+        }
+
+        // POST: Pago/DeleteConfirmed
+        [HttpPost, ActionName("DeleteConfirmed")]
+        [ValidateAntiForgeryToken]
+        public IActionResult DeleteConfirmed(int id)
+        {
+            var pago = _repoPago.ObtenerPorId(id);
+            if (pago == null) return NotFound();
+
+            _repoPago.Baja(id);
             return RedirectToAction(nameof(Index), new { idContrato = pago.IdContrato });
-        }
-
-        // GET: Detalle Pago
-        public IActionResult Details(int id)
-        {
-            var pago = pagoRepo.ObtenerPorId(id);
-            if (pago == null)
-            {
-                return NotFound();
-            }
-            return View(pago);
         }
     }
 }
+
+

@@ -1,0 +1,46 @@
+@model IEnumerable<ProyectoInmobiliaria.Models.Contrato>
+
+@{
+    ViewData["Title"] = "Contratos del Inmueble";
+}
+
+<h2>Contratos del Inmueble</h2>
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">
+        @TempData["Error"]
+    </div>
+}
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">
+        No hay contratos asociados a este inmueble.
+    </div>
+}
+
+<table class="table table-hover table-bordered">
+    <thead>
+        <tr>
+            <th>Id Contrato</th>
+            <th>Inquilino</th>
+            <th>Monto</th>
+            <th>Fecha Desde</th>
+            <th>Fecha Hasta</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var contrato in Model)
+        {
+            <tr>
+                <td>@contrato.IdContrato</td>
+                <!-- Concatenar Nombre y Apellido del Inquilino -->
+                <td>@(contrato.Inquilino != null ? $"{contrato.Inquilino.Nombre} {contrato.Inquilino.Apellido}" : "Sin Inquilino")</td>
+                <td>@contrato.Monto.ToString("C")</td>
+                <td>@contrato.FechaInicio.ToString("dd MMMM yyyy")</td>
+                <td>@contrato.FechaFin.ToString("dd MMMM yyyy")</td>
+            </tr>
+        }
+    </tbody>
+</table>

@@ -12,7 +12,7 @@ namespace ProyectoInmobiliaria.Controllers
         private readonly IPropietarioRepository _repoPropietario;
         private readonly IContratoRepository _repoContrato;
 
-        private const int TamPagina = 10; // cantidad de registros por página
+        private const int TamPagina = 5; // cantidad de registros por página
 
         public InmuebleController(
             IInmuebleRepository repo,
@@ -160,6 +160,22 @@ namespace ProyectoInmobiliaria.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        // GET: Inmueble/Contratos/5
+        public IActionResult Contratos(int id)
+        {
+            // Obtener los contratos asociados al inmueble
+            var contratos = _repoContrato.BuscarPorInmueble(id);
+
+            if (contratos == null || !contratos.Any())
+            {
+                TempData["Error"] = "No hay contratos asociados a este inmueble.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            // Devuelve los contratos a la vista
+            return View(contratos);
+        }
+
         // GET: Inmueble/PorPropietario/5
         public IActionResult PorPropietario(int id)
         {
@@ -168,4 +184,3 @@ namespace ProyectoInmobiliaria.Controllers
         }
     }
 }
-

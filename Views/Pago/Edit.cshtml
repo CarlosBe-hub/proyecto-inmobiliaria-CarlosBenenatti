@@ -1,40 +1,61 @@
 @model ProyectoInmobiliaria.Models.Pago
 
 @{
-    ViewData["Title"] = "Editar Pago";
+    ViewData["Title"] = "Editar Detalle del Pago";
 }
 
-<h2>Editar Pago</h2>
+<h2 class="mb-4">Editar</h2>
 
 <form asp-action="Edit" method="post">
     <input type="hidden" asp-for="IdPago" />
-    <input type="hidden" asp-for="IdContrato" />
 
-    <div class="form-group">
-        <label>N° Pago</label>
-        <input asp-for="NumeroPago" class="form-control" readonly />
+    <div class="card">
+        <div class="card-body">
+            <div class="mb-3">
+                <label class="form-label">ID Pago</label>
+                <input asp-for="IdPago" class="form-control" readonly />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">ID Contrato</label>
+                <input asp-for="IdContrato" class="form-control" readonly />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Número de Pago</label>
+                <input asp-for="NumeroPago" class="form-control" readonly />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Método de Pago</label>
+                <input asp-for="MetodoPago" class="form-control" readonly />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Fecha de Pago</label>
+                <input asp-for="FechaPago" class="form-control" readonly />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Monto</label>
+                <input asp-for="Monto" class="form-control" readonly />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Estado</label>
+                <input value="@(Model.Anulado ? "Anulado" : "Activo")" class="form-control" readonly />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Detalle</label>
+                <textarea asp-for="Detalle" class="form-control"></textarea>
+                <span asp-validation-for="Detalle" class="text-danger"></span>
+            </div>
+        </div>
+
+        <div class="card-footer">
+            <button type="submit" class="btn btn-success">Guardar</button>
+            <a asp-action="Details" asp-route-id="@Model.IdPago" class="btn btn-secondary">Cancelar</a>
+        </div>
     </div>
-
-    <div class="form-group">
-        <label>Fecha</label>
-        <input asp-for="FechaPago" class="form-control" type="date" />
-    </div>
-
-    <div class="form-group">
-        <label>Monto</label>
-        <input asp-for="Monto" class="form-control" readonly />
-    </div>
-
-    <div class="form-group">
-        <label>Método de Pago</label>
-        <input asp-for="MetodoPago" class="form-control" />
-    </div>
-
-    <div class="form-group">
-        <label>Detalle</label>
-        <textarea asp-for="Detalle" class="form-control"></textarea>
-    </div>
-
-    <button type="submit" class="btn btn-primary">Guardar cambios</button>
-    <a asp-action="Index" asp-route-idContrato="@Model.IdContrato" class="btn btn-secondary">Cancelar</a>
 </form>

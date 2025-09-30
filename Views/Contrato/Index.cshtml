@@ -5,6 +5,9 @@
     var pageNumber = ViewBag.PageNumber as int? ?? 1;
     var pageSize = ViewBag.PageSize as int? ?? 5;
     var totalPages = ViewBag.TotalPages as int? ?? 1;
+
+    // Diccionario de contratos renovables que viene del controller
+    var renovables = ViewBag.Renovables as Dictionary<int, bool> ?? new Dictionary<int, bool>();
 }
 
 <h2 class="mb-4">Contratos</h2>
@@ -45,6 +48,16 @@
                     <a asp-action="Delete" asp-route-id="@c.IdContrato" class="btn btn-danger btn-sm">
                         <i class="bi bi-trash"></i> Eliminar
                     </a>
+                    <a asp-action="Index" asp-controller="Pago" asp-route-idContrato="@c.IdContrato" class="btn btn-secondary btn-sm">
+                        <i class="bi bi-credit-card"></i> Ver Pagos
+                    </a>
+                    @* Botón Renovar solo si el contrato es renovable *@
+                    @if (renovables.ContainsKey(c.IdContrato) && renovables[c.IdContrato])
+                    {
+                        <a asp-action="Renovar" asp-route-id="@c.IdContrato" class="btn btn-success btn-sm">
+                            <i class="bi bi-arrow-repeat"></i> Renovar
+                        </a>
+                    }
                 </td>
             </tr>
         }

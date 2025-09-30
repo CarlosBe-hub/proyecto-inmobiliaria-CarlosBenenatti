@@ -21,5 +21,7 @@ namespace ProyectoInmobiliaria.Models
         public int NumeroPago { get; set; }
 
         public Contrato? Contrato { get; set; }
+
+        public bool Pagado { get; set; }
     }
 }

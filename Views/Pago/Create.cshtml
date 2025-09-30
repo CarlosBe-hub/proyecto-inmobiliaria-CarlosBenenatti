@@ -20,7 +20,7 @@
     <div class="form-group">
         <label>Monto</label>
         <input asp-for="Monto" class="form-control" readonly />
-        <input type="hidden" asp-for="Monto" /> 
+        <input type="hidden" asp-for="Monto" />
     </div>
 
     <div class="form-group">
@@ -39,6 +39,8 @@
     </div>
 
     <input type="hidden" asp-for="IdContrato" />
+    <input type="hidden" asp-for="Pagado" value="true" />
+    <input type="hidden" asp-for="Anulado" value="false" />
 
     <button type="submit" class="btn btn-success">Guardar</button>
     <a asp-action="Index" asp-route-idContrato="@Model.IdContrato" class="btn btn-secondary">Cancelar</a>

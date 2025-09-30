@@ -1,15 +1,41 @@
 @model IEnumerable<ProyectoInmobiliaria.Models.Pago>
 @{
     ViewData["Title"] = "Pagos";
-    var idContrato = ViewBag.IdContrato;
+    var idContrato = ViewBag.Contrato?.IdContrato;
+    var totalEsperado = ViewBag.TotalEsperado ?? 0;
+    var pagosRealizados = ViewBag.PagosRealizados ?? 0;
+    var pagosFaltantes = ViewBag.PagosFaltantes ?? 0;
+
+    bool contratoConcluido = (pagosRealizados >= totalEsperado && totalEsperado > 0);
 }
 
 <h2 class="mb-4">Pagos del Contrato @idContrato</h2>
 
+<!-- Resumen de pagos -->
+<div class="alert alert-info">
+    <strong>Total esperado:</strong> @totalEsperado <br />
+    <strong>Pagos realizados:</strong> @pagosRealizados <br />
+    <strong>Pagos faltantes:</strong> 
+    <span class="@(pagosFaltantes > 0 ? "text-danger fw-bold" : "text-success fw-bold")">
+        @pagosFaltantes
+    </span>
+</div>
+
+<!-- Mensaje si el contrato se concretó -->
+@if (contratoConcluido)
+{
+    <div class="alert alert-success">
+         El contrato se ha concretado (todos los pagos realizados).
+    </div>
+}
+
 <div class="mb-3">
-    <a asp-action="Create" asp-route-idContrato="@idContrato" class="btn btn-primary">
-        <i class="bi bi-plus-circle"></i> Nuevo Pago
-    </a>
+    @if (!contratoConcluido)
+    {
+        <a asp-action="Create" asp-route-idContrato="@idContrato" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> Nuevo Pago
+        </a>
+    }
     <a asp-controller="Contrato" asp-action="Index" class="btn btn-secondary">
         <i class="bi bi-arrow-left-circle"></i> ← Volver a Contratos
     </a>
@@ -23,6 +49,7 @@
             <th>Monto</th>
             <th>Método</th>
             <th>Detalle</th>
+            <th>Estado</th>
             <th class="text-center">Acciones</th>
         </tr>
     </thead>
@@ -35,6 +62,20 @@
             <td>@item.Monto.ToString("C")</td>
             <td>@item.MetodoPago</td>
             <td>@item.Detalle</td>
+            <td>
+                @if (item.Anulado)
+                {
+                    <span class="badge bg-danger">Anulado</span>
+                }
+                else if (item.Pagado)
+                {
+                    <span class="badge bg-success">Pagado</span>
+                }
+                else
+                {
+                    <span class="badge bg-warning text-dark">Pendiente</span>
+                }
+            </td>
             <td class="text-center">
                 <a asp-action="Details" asp-route-id="@item.IdPago" class="btn btn-info btn-sm text-white">
                     <i class="bi bi-eye"></i> Detalle

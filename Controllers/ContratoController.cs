@@ -13,15 +13,18 @@ namespace ProyectoInmobiliaria.Controllers
         private readonly IContratoRepository _repo;
         private readonly IInquilinoRepository _repoInquilino;
         private readonly IInmuebleRepository _repoInmueble;
+        private readonly IPagoRepository _repoPago;
 
         public ContratoController(
             IContratoRepository repo,
             IInquilinoRepository repoInquilino,
-            IInmuebleRepository repoInmueble)
+            IInmuebleRepository repoInmueble,
+            IPagoRepository repoPago)
         {
             _repo = repo;
             _repoInquilino = repoInquilino;
             _repoInmueble = repoInmueble;
+            _repoPago = repoPago;
         }
 
         // GET: Contrato
@@ -29,20 +32,28 @@ namespace ProyectoInmobiliaria.Controllers
         {
             var (contratos, totalCount) = _repo.ListarPaginado(pageNumber, pageSize);
 
+            // Diccionario para saber si se puede renovar
+            var renovables = contratos.ToDictionary(
+                c => c.IdContrato,
+                c => PuedeRenovarContrato(c.IdContrato)
+            );
+
             var totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
 
             ViewBag.PageNumber = pageNumber;
             ViewBag.PageSize = pageSize;
             ViewBag.TotalPages = totalPages;
+            ViewBag.Renovables = renovables;
 
             return View(contratos);
         }
 
-        // GET: Contrato/Detalle
+        // GET: Contrato/Details
         public IActionResult Details(int id)
         {
             var contrato = _repo.ObtenerPorId(id);
             if (contrato == null) return NotFound();
+
             return View(contrato);
         }
 
@@ -71,7 +82,7 @@ namespace ProyectoInmobiliaria.Controllers
                 ModelState.AddModelError("", "La fecha de inicio debe ser anterior a la fecha de fin.");
             }
 
-            if (_repo.ExisteOcupacion(contrato.InmuebleId, contrato.FechaInicio, contrato.FechaFin))
+            if (_repo.ExisteOcupacion(contrato.InmuebleId, contrato.FechaInicio, contrato.FechaFin, contrato.IdContrato))
             {
                 ModelState.AddModelError("", "El inmueble ya está ocupado en ese rango de fechas.");
             }
@@ -115,7 +126,6 @@ namespace ProyectoInmobiliaria.Controllers
                 ModelState.AddModelError("", "La fecha de inicio debe ser anterior a la fecha de fin.");
             }
 
-            // Excluir el contrato actual en la validación
             if (_repo.ExisteOcupacion(contrato.InmuebleId, contrato.FechaInicio, contrato.FechaFin, contrato.IdContrato))
             {
                 ModelState.AddModelError("", "El inmueble ya está ocupado en ese rango de fechas.");
@@ -157,62 +167,52 @@ namespace ProyectoInmobiliaria.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        // GET: Contrato/Active
-        public IActionResult Active(int pageNumber = 1, int pageSize = 5)
+        // GET: Contrato/Renovar
+        public IActionResult Renovar(int id)
         {
-            var lista = _repo.Listar()
-                .Where(c => c.FechaInicio <= DateTime.Today && c.FechaFin >= DateTime.Today)
+            if (!PuedeRenovarContrato(id))
+            {
+                return BadRequest("El contrato no puede renovarse.");
+            }
+
+            var contratoViejo = _repo.ObtenerPorId(id);
+            if (contratoViejo == null) return NotFound();
+
+            // Crear contrato nuevo en base al viejo
+            var contratoNuevo = new Contrato
+            {
+                InquilinoId = contratoViejo.InquilinoId,
+                InmuebleId = contratoViejo.InmuebleId,
+                FechaInicio = contratoViejo.FechaFin.AddDays(1), // empieza al día siguiente de que terminó
+                FechaFin = contratoViejo.FechaFin.AddMonths(6),  // ejemplo: 6 meses
+                Monto = contratoViejo.Monto
+            };
+
+            // Cargar listas para selects
+            var inquilinos = _repoInquilino.Listar()
+                .Select(i => new { i.IdInquilino, NombreCompleto = i.Nombre + " " + i.Apellido })
                 .ToList();
 
-            var totalCount = lista.Count;
-            var totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
-            var contratosPaginados = lista.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToList();
+            var inmuebles = _repoInmueble.Listar();
 
-            ViewBag.PageNumber = pageNumber;
-            ViewBag.PageSize = pageSize;
-            ViewBag.TotalPages = totalPages;
+            ViewBag.Inquilinos = new SelectList(inquilinos, "IdInquilino", "NombreCompleto", contratoNuevo.InquilinoId);
+            ViewBag.Inmuebles = new SelectList(inmuebles, "IdInmueble", "Direccion", contratoNuevo.InmuebleId);
 
-            return View("Index", contratosPaginados);
+            // Reusar la vista Create
+            return View("Create", contratoNuevo);
         }
 
-        // GET: Contrato/ByTenant
-        public IActionResult ByTenant(int tenantId, int pageNumber = 1, int pageSize = 5)
+        
+        private bool PuedeRenovarContrato(int contratoId)
         {
-            var lista = _repo.Listar()
-                .Where(c => c.InquilinoId == tenantId)
-                .ToList();
+            var contrato = _repo.ObtenerPorId(contratoId);
+            if (contrato == null) return false;
 
-            var totalCount = lista.Count;
-            var totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
-            var contratosPaginados = lista.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToList();
+            var pagos = _repoPago.ObtenerPorContrato(contratoId);
+            if (pagos == null || pagos.Count == 0) return false;
 
-            ViewBag.PageNumber = pageNumber;
-            ViewBag.PageSize = pageSize;
-            ViewBag.TotalPages = totalPages;
-
-            return View("Index", contratosPaginados);
-        }
-
-        // GET: Contrato/ByOwner
-        public IActionResult ByOwner(int ownerId, int pageNumber = 1, int pageSize = 5)
-        {
-            var inmuebles = _repoInmueble.Listar()
-                .Where(i => i.PropietarioId == ownerId)
-                .Select(i => i.IdInmueble);
-
-            var lista = _repo.Listar()
-                .Where(c => inmuebles.Contains(c.InmuebleId))
-                .ToList();
-
-            var totalCount = lista.Count;
-            var totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
-            var contratosPaginados = lista.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToList();
-
-            ViewBag.PageNumber = pageNumber;
-            ViewBag.PageSize = pageSize;
-            ViewBag.TotalPages = totalPages;
-
-            return View("Index", contratosPaginados);
+            // Renovable si todos los pagos fueron realizados y no anulados
+            return pagos.All(p => p.Pagado && !p.Anulado);
         }
     }
 }
