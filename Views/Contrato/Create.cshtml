@@ -6,6 +6,9 @@
 
 <h2 class="mb-4">Crear Contrato</h2>
 
+<!-- Mostrar errores generales -->
+<div asp-validation-summary="All" class="alert alert-danger"></div>
+
 <form asp-action="Create">
     <div class="mb-3">
         <label asp-for="FechaInicio" class="form-label"></label>
@@ -37,8 +40,12 @@
         <span asp-validation-for="InquilinoId" class="text-danger"></span>
     </div>
 
-    <button type="submit" class="btn btn-success"><i class="bi bi-check-circle"></i> Guardar</button>
-    <a asp-action="Index" class="btn btn-secondary"><i class="bi bi-arrow-left"></i> Volver</a>
+    <button type="submit" class="btn btn-success">
+        <i class="bi bi-check-circle"></i> Guardar
+    </button>
+    <a asp-action="Index" class="btn btn-secondary">
+        <i class="bi bi-arrow-left"></i> Volver
+    </a>
 </form>
 
 @section Scripts {

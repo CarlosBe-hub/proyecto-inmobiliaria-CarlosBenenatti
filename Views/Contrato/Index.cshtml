@@ -6,25 +6,24 @@
     var pageSize = ViewBag.PageSize as int? ?? 5;
     var totalPages = ViewBag.TotalPages as int? ?? 1;
 
-    // Diccionario de contratos renovables que viene del controller
     var renovables = ViewBag.Renovables as Dictionary<int, bool> ?? new Dictionary<int, bool>();
+    var pagosActivos = ViewBag.PagosActivos as Dictionary<int, int> ?? new Dictionary<int, int>();
+
+    bool isFiltering = ViewBag.IsFiltering as bool? ?? false;
+    string filterDesde = ViewBag.FilterFechaDesde as string ?? "";
+    string filterHasta = ViewBag.FilterFechaHasta as string ?? "";
 }
 
 <h2 class="mb-4">Contratos</h2>
 
-<!-- Mensajes de exito / error -->
+<!-- Mensajes -->
 @if (TempData["Error"] != null)
 {
-    <div id="alert-error" class="alert alert-danger text-center">
-        @TempData["Error"]
-    </div>
+    <div id="alert-error" class="alert alert-danger text-center">@TempData["Error"]</div>
 }
-
 @if (TempData["Success"] != null)
 {
-    <div id="alert-success" class="alert alert-success text-center">
-        @TempData["Success"]
-    </div>
+    <div id="alert-success" class="alert alert-success text-center">@TempData["Success"]</div>
 }
 
 <script>
@@ -34,19 +33,47 @@
     }, 3000);
 </script>
 
-<p>
-    <a asp-action="Create" class="btn btn-primary">
-        <i class="bi bi-plus-circle"></i> + Nuevo Contrato
-    </a>
-</p>
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <a asp-action="Create" class="btn btn-primary">
+            <i class="fa fa-plus-circle"></i> + Nuevo Contrato
+        </a>
+    </div>
+
+    <!-- Formulario de filtro (GET) -->
+    <form asp-action="Index" method="get" class="form-inline">
+        <div class="form-group mr-2">
+            <label for="fechaDesde" class="sr-only">Desde</label>
+            <input type="date" name="fechaDesde" id="fechaDesde" class="form-control form-control-sm"
+                   value="@filterDesde" />
+        </div>
+        <div class="form-group mr-2">
+            <label for="fechaHasta" class="sr-only">Hasta</label>
+            <input type="date" name="fechaHasta" id="fechaHasta" class="form-control form-control-sm"
+                   value="@filterHasta" />
+        </div>
+        <button type="submit" class="btn btn-outline-secondary btn-sm mr-1">Filtrar</button>
+        <a asp-action="Index" class="btn btn-link btn-sm">Limpiar</a>
+    </form>
+</div>
+
+@if (isFiltering)
+{
+    <div class="alert alert-info">
+        <strong>Filtro activo:</strong>
+        Desde <span class="font-weight-bold">@(!string.IsNullOrEmpty(filterDesde) ? DateTime.Parse(filterDesde).ToShortDateString() : "-")</span>
+        hasta <span class="font-weight-bold">@(!string.IsNullOrEmpty(filterHasta) ? DateTime.Parse(filterHasta).ToShortDateString() : "-")</span>
+    </div>
+}
 
 <table class="table table-hover table-bordered align-middle">
-    <thead class="table-dark">
+    <thead class="thead-dark">
         <tr>
             <th>Inquilino</th>
             <th>Inmueble</th>
             <th>Fecha Inicio</th>
-            <th>Fecha Fin</th>
+            <th>Fecha Fin Original</th>
+            <th>Fecha Fin Real</th>
             <th>Monto</th>
             <th class="text-center">Acciones</th>
         </tr>
@@ -59,32 +86,76 @@
                 <td>@c.Inmueble?.Direccion</td>
                 <td>@c.FechaInicio.ToShortDateString()</td>
                 <td>@c.FechaFin.ToShortDateString()</td>
+                <td>
+                    @if (c.FechaAnticipada.HasValue)
+                    {
+                        <span class="text-danger">@c.FechaAnticipada.Value.ToShortDateString() (Anticipada)</span>
+                    }
+                    else
+                    {
+                        @c.FechaFin.ToShortDateString()
+                    }
+                </td>
                 <td>@c.Monto.ToString("C")</td>
                 <td class="text-center">
                     <a asp-action="Details" asp-route-id="@c.IdContrato" class="btn btn-info btn-sm text-white">
-                        <i class="bi bi-eye"></i> Detalles
+                        <i class="fa fa-eye"></i> Detalles
                     </a>
                     <a asp-action="Edit" asp-route-id="@c.IdContrato" class="btn btn-warning btn-sm text-dark">
-                        <i class="bi bi-pencil-square"></i> Editar
+                        <i class="fa fa-pencil-alt"></i> Editar
                     </a>
                     <a asp-action="Delete" asp-route-id="@c.IdContrato" class="btn btn-danger btn-sm">
-                        <i class="bi bi-trash"></i> Eliminar
+                        <i class="fa fa-trash"></i> Eliminar
                     </a>
                     <a asp-action="Index" asp-controller="Pago" asp-route-idContrato="@c.IdContrato" class="btn btn-secondary btn-sm">
-                        <i class="bi bi-credit-card"></i> Ver Pagos
+                        <i class="fa fa-credit-card"></i> Ver Pagos
                     </a>
 
-                    <!-- 🔹 Botón Renovar siempre visible -->
+                    <!-- Finalizar Anticipado (abre modal) -->
+                    @{
+                        int cantidadPagos = pagosActivos.ContainsKey(c.IdContrato) ? pagosActivos[c.IdContrato] : 0;
+                        bool puedeFinalizar = c.Estado == "Activo" && cantidadPagos >= 3 && !c.FechaAnticipada.HasValue;
+                        string tooltip = "";
+                        if (!puedeFinalizar)
+                        {
+                            if (c.Estado != "Activo")
+                                tooltip = "Contrato no activo";
+                            else if (c.FechaAnticipada.HasValue)
+                                tooltip = "Ya finalizado anticipadamente";
+                            else if (cantidadPagos < 3)
+                                tooltip = "Debe tener al menos 3 pagos";
+                        }
+                    }
+
+                    @if (puedeFinalizar)
+                    {
+                        <button class="btn btn-danger btn-sm"
+                                data-toggle="modal"
+                                data-target="#modalFinalizarAnticipado"
+                                data-id="@c.IdContrato"
+                                data-fechainicio="@c.FechaInicio.ToString("yyyy-MM-dd")"
+                                data-fechafin="@c.FechaFin.ToString("yyyy-MM-dd")"
+                                data-monto="@c.Monto">
+                            <i class="fa fa-times-circle"></i> Finalizar Anticipado
+                        </button>
+                    }
+                    else
+                    {
+                        <button class="btn btn-danger btn-sm" disabled title="@tooltip">
+                            <i class="fa fa-times-circle"></i> Finalizar Anticipado
+                        </button>
+                    }
+
                     @if (renovables.ContainsKey(c.IdContrato) && renovables[c.IdContrato])
                     {
                         <a asp-action="Renovar" asp-route-id="@c.IdContrato" class="btn btn-success btn-sm">
-                            <i class="bi bi-arrow-repeat"></i> Renovar
+                            <i class="fa fa-sync-alt"></i> Renovar
                         </a>
                     }
                     else
                     {
-                        <button class="btn btn-success btn-sm" disabled title="Este contrato no puede renovarse">
-                            <i class="bi bi-arrow-repeat"></i> Renovar
+                        <button class="btn btn-success btn-sm" disabled title="No renovable">
+                            <i class="fa fa-sync-alt"></i> Renovar
                         </button>
                     }
                 </td>
@@ -93,22 +164,104 @@
     </tbody>
 </table>
 
-<!-- Paginación -->
-<nav>
-    <ul class="pagination justify-content-center">
-        <li class="page-item @(pageNumber == 1 ? "disabled" : "")">
-            <a class="page-link" asp-action="Index" asp-route-pageNumber="@(pageNumber - 1)" asp-route-pageSize="@pageSize">Anterior</a>
-        </li>
-
-        @for (int i = 1; i <= totalPages; i++)
-        {
-            <li class="page-item @(i == pageNumber ? "active" : "")">
-                <a class="page-link" asp-action="Index" asp-route-pageNumber="@i" asp-route-pageSize="@pageSize">@i</a>
+<!-- Paginación (oculta si hay filtro activo) -->
+@if (!isFiltering)
+{
+    <nav>
+        <ul class="pagination justify-content-center">
+            <li class="page-item @(pageNumber == 1 ? "disabled" : "")">
+                <a class="page-link" asp-action="Index" asp-route-pageNumber="@(pageNumber - 1)" asp-route-pageSize="@pageSize">Anterior</a>
             </li>
-        }
 
-        <li class="page-item @(pageNumber == totalPages ? "disabled" : "")">
-            <a class="page-link" asp-action="Index" asp-route-pageNumber="@(pageNumber + 1)" asp-route-pageSize="@pageSize">Siguiente</a>
-        </li>
-    </ul>
-</nav>
+            @for (int i = 1; i <= totalPages; i++)
+            {
+                <li class="page-item @(i == pageNumber ? "active" : "")">
+                    <a class="page-link" asp-action="Index" asp-route-pageNumber="@i" asp-route-pageSize="@pageSize">@i</a>
+                </li>
+            }
+
+            <li class="page-item @(pageNumber == totalPages ? "disabled" : "")">
+                <a class="page-link" asp-action="Index" asp-route-pageNumber="@(pageNumber + 1)" asp-route-pageSize="@pageSize">Siguiente</a>
+            </li>
+        </ul>
+    </nav>
+}
+
+<!-- Modal Finalizar Anticipado (igual que antes) -->
+<div class="modal fade" id="modalFinalizarAnticipado" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <form asp-action="FinalizarAnticipado" method="post">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title">Finalizar Contrato Anticipadamente</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="id" id="contratoId" />
+                    <div class="form-group">
+                        <label>Fecha Inicio</label>
+                        <input type="text" id="fechaInicio" class="form-control" readonly />
+                    </div>
+                    <div class="form-group">
+                        <label>Fecha Fin Original</label>
+                        <input type="text" id="fechaFin" class="form-control" readonly />
+                    </div>
+                    <div class="form-group">
+                        <label>Fecha Fin Anticipada</label>
+                        <input type="date" class="form-control" name="fechaAnticipada" id="fechaAnticipada" required />
+                    </div>
+                    <div class="form-group">
+                        <label>Multa Calculada</label>
+                        <input type="text" id="multaCalculada" class="form-control text-danger font-weight-bold" readonly />
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-danger">Finalizar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+$('#modalFinalizarAnticipado').on('show.bs.modal', function (event) {
+    var button = $(event.relatedTarget);
+
+    var contratoId = button.data('id');
+    var fechaInicio = button.data('fechainicio');
+    var fechaFin = button.data('fechafin');
+    var monto = parseFloat(button.data('monto'));
+
+    var modal = $(this);
+    modal.find('#contratoId').val(contratoId);
+    modal.find('#fechaInicio').val(new Date(fechaInicio).toLocaleDateString('es-AR'));
+    modal.find('#fechaFin').val(new Date(fechaFin).toLocaleDateString('es-AR'));
+
+    var inputAnticipada = modal.find('#fechaAnticipada');
+    var inputMulta = modal.find('#multaCalculada');
+
+    inputAnticipada.attr('min', fechaInicio);
+    inputAnticipada.attr('max', fechaFin);
+    inputAnticipada.val('');
+    inputMulta.val('');
+
+    inputAnticipada.off('change').on('change', function () {
+        if (!this.value) return;
+
+        let fi = new Date(fechaInicio);
+        let ff = new Date(fechaFin);
+        let fa = new Date(this.value);
+
+        let totalDias = (ff - fi) / (1000 * 60 * 60 * 24);
+        let diasCumplidos = (fa - fi) / (1000 * 60 * 60 * 24);
+
+        let multa = diasCumplidos < totalDias / 2 ? monto * 2 : monto;
+        inputMulta.val(multa.toLocaleString('es-AR', { style: 'currency', currency: 'ARS' }));
+    });
+});
+</script>
+}

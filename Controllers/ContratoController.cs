@@ -28,13 +28,34 @@ namespace ProyectoInmobiliaria.Controllers
         }
 
         // GET: Contrato
-        public IActionResult Index(int pageNumber = 1, int pageSize = 5)
+        public IActionResult Index(DateTime? fechaDesde, DateTime? fechaHasta, int pageNumber = 1, int pageSize = 5)
         {
-            var (contratos, totalCount) = _repo.ListarPaginado(pageNumber, pageSize);
+            IEnumerable<Contrato> contratos;
+            int totalCount;
+
+            bool isFiltering = fechaDesde.HasValue && fechaHasta.HasValue;
+
+            if (isFiltering)
+            {
+                contratos = _repo.ListarVigentes(fechaDesde.Value, fechaHasta.Value);
+                totalCount = contratos.Count();
+            }
+            else
+            {
+                var result = _repo.ListarPaginado(pageNumber, pageSize);
+                contratos = result.Contratos;
+                totalCount = result.TotalCount;
+            }
 
             var renovables = contratos.ToDictionary(
                 c => c.IdContrato,
                 c => PuedeRenovarContrato(c.IdContrato)
+            );
+
+            var pagosActivos = contratos.ToDictionary(
+                c => c.IdContrato,
+                c => _repoPago.ObtenerPorContrato(c.IdContrato)
+                              .Count(p => p.Pagado && !p.Anulado)
             );
 
             var totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
@@ -43,8 +64,27 @@ namespace ProyectoInmobiliaria.Controllers
             ViewBag.PageSize = pageSize;
             ViewBag.TotalPages = totalPages;
             ViewBag.Renovables = renovables;
+            ViewBag.PagosActivos = pagosActivos;
+
+
+            ViewBag.IsFiltering = isFiltering;
+            ViewBag.FilterFechaDesde = fechaDesde?.ToString("yyyy-MM-dd") ?? "";
+            ViewBag.FilterFechaHasta = fechaHasta?.ToString("yyyy-MM-dd") ?? "";
 
             return View(contratos);
+        }
+
+        // GET: Contrato/Vigentes
+        public IActionResult Vigentes()
+        {
+            var hoy = DateTime.Today;
+            var contratosVigentes = _repo.Listar()
+                                         .Where(c => c.Estado == "Activo"
+                                                  && c.FechaInicio <= hoy
+                                                  && c.FechaFin >= hoy)
+                                         .ToList();
+
+            return View("Vigentes", contratosVigentes);
         }
 
         // GET: Contrato/Details
@@ -60,8 +100,8 @@ namespace ProyectoInmobiliaria.Controllers
         public IActionResult Create()
         {
             var inquilinos = _repoInquilino.Listar()
-                .Select(i => new { i.IdInquilino, NombreCompleto = i.Nombre + " " + i.Apellido })
-                .ToList();
+                                           .Select(i => new { i.IdInquilino, NombreCompleto = i.Nombre + " " + i.Apellido })
+                                           .ToList();
 
             var inmuebles = _repoInmueble.Listar();
 
@@ -77,14 +117,10 @@ namespace ProyectoInmobiliaria.Controllers
         public IActionResult Create(Contrato contrato)
         {
             if (contrato.FechaInicio >= contrato.FechaFin)
-            {
                 ModelState.AddModelError("", "La fecha de inicio debe ser anterior a la fecha de fin.");
-            }
 
             if (_repo.ExisteOcupacion(contrato.InmuebleId, contrato.FechaInicio, contrato.FechaFin, contrato.IdContrato))
-            {
                 ModelState.AddModelError("", "El inmueble ya está ocupado en ese rango de fechas.");
-            }
 
             if (ModelState.IsValid)
             {
@@ -95,8 +131,8 @@ namespace ProyectoInmobiliaria.Controllers
             }
 
             var inquilinos = _repoInquilino.Listar()
-                .Select(i => new { i.IdInquilino, NombreCompleto = i.Nombre + " " + i.Apellido })
-                .ToList();
+                                           .Select(i => new { i.IdInquilino, NombreCompleto = i.Nombre + " " + i.Apellido })
+                                           .ToList();
 
             var inmuebles = _repoInmueble.Listar();
 
@@ -123,14 +159,10 @@ namespace ProyectoInmobiliaria.Controllers
             if (id != contrato.IdContrato) return BadRequest();
 
             if (contrato.FechaInicio >= contrato.FechaFin)
-            {
                 ModelState.AddModelError("", "La fecha de inicio debe ser anterior a la fecha de fin.");
-            }
 
             if (_repo.ExisteOcupacion(contrato.InmuebleId, contrato.FechaInicio, contrato.FechaFin, contrato.IdContrato))
-            {
                 ModelState.AddModelError("", "El inmueble ya está ocupado en ese rango de fechas.");
-            }
 
             if (ModelState.IsValid)
             {
@@ -140,8 +172,8 @@ namespace ProyectoInmobiliaria.Controllers
             }
 
             var inquilinos = _repoInquilino.Listar()
-                .Select(i => new { i.IdInquilino, NombreCompleto = i.Nombre + " " + i.Apellido })
-                .ToList();
+                                           .Select(i => new { i.IdInquilino, NombreCompleto = i.Nombre + " " + i.Apellido })
+                                           .ToList();
 
             var inmuebles = _repoInmueble.Listar();
 
@@ -178,7 +210,7 @@ namespace ProyectoInmobiliaria.Controllers
 
             if (!PuedeRenovarContrato(id))
             {
-                TempData["Error"] = "No se puede renovar este contrato porque ya finalizó o ya existe uno activo.";
+                TempData["Error"] = "No se puede renovar este contrato.";
                 return RedirectToAction(nameof(Index));
             }
 
@@ -196,8 +228,8 @@ namespace ProyectoInmobiliaria.Controllers
             };
 
             var inquilinos = _repoInquilino.Listar()
-                .Select(i => new { i.IdInquilino, NombreCompleto = i.Nombre + " " + i.Apellido })
-                .ToList();
+                                           .Select(i => new { i.IdInquilino, NombreCompleto = i.Nombre + " " + i.Apellido })
+                                           .ToList();
 
             var inmuebles = _repoInmueble.Listar();
 
@@ -211,23 +243,65 @@ namespace ProyectoInmobiliaria.Controllers
         {
             var contrato = _repo.ObtenerPorId(contratoId);
             if (contrato == null) return false;
-
-            if (contrato.Estado == "Finalizado")
-                return false;
+            if (contrato.Estado == "Finalizado") return false;
 
             var contratosMismoInmueble = _repo.Listar()
-                .Where(c => c.InmuebleId == contrato.InmuebleId && c.Estado == "Activo" && c.IdContrato != contrato.IdContrato)
-                .ToList();
+                                             .Where(c => c.InmuebleId == contrato.InmuebleId && c.Estado == "Activo" && c.IdContrato != contrato.IdContrato)
+                                             .ToList();
 
-            if (contratosMismoInmueble.Any())
-                return false;
+            if (contratosMismoInmueble.Any()) return false;
 
             var pagos = _repoPago.ObtenerPorContrato(contratoId);
             if (pagos == null) return false;
 
             var pagosRealizados = pagos.Count(p => p.Pagado && !p.Anulado);
-
             return pagosRealizados >= 6;
+        }
+
+        // POST: Contrato/FinalizarAnticipado
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult FinalizarAnticipado(int id, DateTime fechaAnticipada)
+        {
+            var contrato = _repo.ObtenerPorId(id);
+            if (contrato == null) return NotFound();
+
+            if (fechaAnticipada < contrato.FechaInicio || fechaAnticipada > contrato.FechaFin)
+            {
+                TempData["Error"] = "La fecha anticipada debe estar dentro del rango del contrato.";
+                return RedirectToAction(nameof(Details), new { id = contrato.IdContrato });
+            }
+
+            // Calcular multa según si cumplió menos de la mitad del contrato
+            double totalDias = (contrato.FechaFin - contrato.FechaInicio).TotalDays;
+            double diasCumplidos = (fechaAnticipada - contrato.FechaInicio).TotalDays;
+            decimal multa = diasCumplidos < totalDias / 2 ? contrato.Monto * 2 : contrato.Monto;
+
+            contrato.FechaAnticipada = fechaAnticipada;
+            contrato.Multa = multa;
+            contrato.Estado = "Finalizado";
+            _repo.Modificar(contrato);
+
+            // Generar pago por la multa
+            var pagosExistentes = _repoPago.ObtenerPorContrato(contrato.IdContrato);
+            int nroPago = pagosExistentes?.Any() == true ? pagosExistentes.Max(p => p.NumeroPago) + 1 : 1;
+
+            var pagoMulta = new Pago
+            {
+                IdContrato = contrato.IdContrato,
+                NumeroPago = nroPago,
+                FechaPago = DateTime.Now,
+                Monto = multa,
+                Detalle = $"Multa por finalización anticipada ({fechaAnticipada:dd/MM/yyyy})",
+                MetodoPago = "Pendiente",
+                Pagado = false,
+                Anulado = false
+            };
+
+            _repoPago.Alta(pagoMulta);
+
+            TempData["Success"] = $"Contrato finalizado anticipadamente. Multa generada: {multa:C}";
+            return RedirectToAction(nameof(Details), new { id = contrato.IdContrato });
         }
     }
 }

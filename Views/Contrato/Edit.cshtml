@@ -6,6 +6,9 @@
 
 <h2 class="mb-4">Editar Contrato</h2>
 
+<!-- Mostrar errores generales -->
+<div asp-validation-summary="All" class="alert alert-danger"></div>
+
 <form asp-action="Edit">
     <input type="hidden" asp-for="IdContrato" />
     <input type="hidden" asp-for="InmuebleId" />

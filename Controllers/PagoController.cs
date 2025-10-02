@@ -21,8 +21,18 @@ namespace ProyectoInmobiliaria.Controllers
             var contrato = _repoContrato.ObtenerPorId(idContrato);
             if (contrato == null) return NotFound();
 
-            ViewBag.Contrato = contrato;
             var pagos = _repoPago.ObtenerPorContrato(idContrato);
+
+            // Calcular totales
+            var pagosRealizados = pagos.Count(p => p.Pagado && !p.Anulado);
+            var totalEsperado = 6; // fijo en 6 pagos (esto se puede cambiar a futuro)
+            var pagosFaltantes = totalEsperado - pagosRealizados;
+
+            ViewBag.Contrato = contrato;
+            ViewBag.TotalEsperado = totalEsperado;
+            ViewBag.PagosRealizados = pagosRealizados;
+            ViewBag.PagosFaltantes = pagosFaltantes;
+
             return View(pagos);
         }
 
@@ -48,9 +58,12 @@ namespace ProyectoInmobiliaria.Controllers
                 IdContrato = idContrato,
                 NumeroPago = numeroPago,
                 FechaPago = DateTime.Today,
-                Pagado = true
+                Pagado = true,
+                Anulado = false,
+                Monto = contrato.Monto
             };
 
+            ViewBag.Contrato = contrato;
             return View(pago);
         }
 
@@ -59,24 +72,34 @@ namespace ProyectoInmobiliaria.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult Create(Pago pago)
         {
+            var contrato = _repoContrato.ObtenerPorId(pago.IdContrato);
+            if (contrato == null) return NotFound();
+
+            pago.Monto = contrato.Monto;
+
             if (ModelState.IsValid)
             {
                 _repoPago.Alta(pago);
 
-                // Recalcular estado del contrato
                 var pagos = _repoPago.ObtenerPorContrato(pago.IdContrato);
                 var pagosRealizados = pagos.Count(p => p.Pagado && !p.Anulado);
 
-                var contrato = _repoContrato.ObtenerPorId(pago.IdContrato);
-                if (contrato != null)
+                if (pagosRealizados >= 6)
                 {
-                    contrato.Estado = pagosRealizados >= 6 ? "Finalizado" : "Activo";
+                    _repoContrato.TerminarAnticipado(contrato.IdContrato, contrato.FechaFin, 0);
+                    TempData["SuccessMessage"] = "Pago registrado correctamente. Se completaron 6 pagos y el contrato ha sido finalizado.";
+                }
+                else
+                {
+                    contrato.Estado = "Activo";
                     _repoContrato.Modificar(contrato);
+                    TempData["SuccessMessage"] = "Pago registrado correctamente.";
                 }
 
                 return RedirectToAction(nameof(Index), new { idContrato = pago.IdContrato });
             }
 
+            ViewBag.Contrato = contrato;
             return View(pago);
         }
 
@@ -86,6 +109,10 @@ namespace ProyectoInmobiliaria.Controllers
             var pago = _repoPago.ObtenerPorId(id);
             if (pago == null) return NotFound();
 
+            var contrato = _repoContrato.ObtenerPorId(pago.IdContrato);
+            if (contrato == null) return NotFound();
+
+            ViewBag.Contrato = contrato;
             return View(pago);
         }
 
@@ -96,24 +123,31 @@ namespace ProyectoInmobiliaria.Controllers
         {
             if (id != pago.IdPago) return NotFound();
 
+            var contrato = _repoContrato.ObtenerPorId(pago.IdContrato);
+            if (contrato == null) return NotFound();
+
+            pago.Monto = contrato.Monto;
+
             if (ModelState.IsValid)
             {
                 _repoPago.Modificar(pago);
 
-                // Recalcular estado del contrato
                 var pagos = _repoPago.ObtenerPorContrato(pago.IdContrato);
                 var pagosRealizados = pagos.Count(p => p.Pagado && !p.Anulado);
 
-                var contrato = _repoContrato.ObtenerPorId(pago.IdContrato);
-                if (contrato != null)
+                if (pagosRealizados >= 6)
+                    _repoContrato.TerminarAnticipado(contrato.IdContrato, contrato.FechaFin, 0);
+                else
                 {
-                    contrato.Estado = pagosRealizados >= 6 ? "Finalizado" : "Activo";
+                    contrato.Estado = "Activo";
                     _repoContrato.Modificar(contrato);
                 }
 
+                TempData["SuccessMessage"] = "Pago editado correctamente.";
                 return RedirectToAction(nameof(Index), new { idContrato = pago.IdContrato });
             }
 
+            ViewBag.Contrato = contrato;
             return View(pago);
         }
 
@@ -122,6 +156,9 @@ namespace ProyectoInmobiliaria.Controllers
         {
             var pago = _repoPago.ObtenerPorId(id);
             if (pago == null) return NotFound();
+
+            var contrato = _repoContrato.ObtenerPorId(pago.IdContrato);
+            ViewBag.Contrato = contrato;
 
             return View(pago);
         }
@@ -140,21 +177,24 @@ namespace ProyectoInmobiliaria.Controllers
 
             try
             {
-                var result = _repoPago.Baja(id); 
+                var result = _repoPago.Baja(id);
                 if (result <= 0)
                 {
                     TempData["ErrorMessage"] = "No se pudo anular el pago.";
                     return RedirectToAction(nameof(Index), new { idContrato = pago.IdContrato });
                 }
 
-                // Recalcular estado del contrato
                 var pagos = _repoPago.ObtenerPorContrato(pago.IdContrato);
                 var pagosRealizados = pagos.Count(p => p.Pagado && !p.Anulado);
 
                 var contrato = _repoContrato.ObtenerPorId(pago.IdContrato);
                 if (contrato != null)
                 {
-                    contrato.Estado = pagosRealizados >= 6 ? "Finalizado" : "Activo";
+                    if (pagosRealizados < 6 && contrato.Estado == "Finalizado")
+                        _repoContrato.ReactivarContrato(contrato.IdContrato);
+                    else
+                        contrato.Estado = "Activo";
+
                     _repoContrato.Modificar(contrato);
                 }
 
@@ -166,6 +206,55 @@ namespace ProyectoInmobiliaria.Controllers
             }
 
             return RedirectToAction(nameof(Index), new { idContrato = pago.IdContrato });
+        }
+
+        // GET: Pago/FinalizarAnticipado/5
+        public IActionResult FinalizarAnticipado(int idContrato)
+        {
+            var contrato = _repoContrato.ObtenerPorId(idContrato);
+            if (contrato == null) return NotFound();
+
+            var pagos = _repoPago.ObtenerPorContrato(idContrato)?.Count(p => p.Pagado && !p.Anulado) ?? 0;
+            if (pagos < 1)
+            {
+                TempData["ErrorMessage"] = "No se puede finalizar anticipadamente sin al menos un pago registrado.";
+                return RedirectToAction(nameof(Index), new { idContrato });
+            }
+
+            ViewBag.Contrato = contrato;
+            return View(contrato);
+        }
+
+        // POST: Pago/FinalizarAnticipado
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult FinalizarAnticipado(int idContrato, DateTime fechaAnticipada)
+        {
+            var contrato = _repoContrato.ObtenerPorId(idContrato);
+            if (contrato == null) return NotFound();
+
+            var pagos = _repoPago.ObtenerPorContrato(idContrato)?.Count(p => p.Pagado && !p.Anulado) ?? 0;
+            if (pagos < 1)
+            {
+                TempData["ErrorMessage"] = "No se puede finalizar anticipadamente sin al menos un pago registrado.";
+                return RedirectToAction(nameof(Index), new { idContrato });
+            }
+
+            if (fechaAnticipada < contrato.FechaInicio)
+            {
+                TempData["ErrorMessage"] = "La fecha de finalización anticipada no puede ser anterior a la fecha de inicio del contrato.";
+                return RedirectToAction(nameof(Index), new { idContrato });
+            }
+
+            var totalDias = (contrato.FechaFin - contrato.FechaInicio).TotalDays;
+            var diasCumplidos = (fechaAnticipada - contrato.FechaInicio).TotalDays;
+
+            decimal multa = diasCumplidos < totalDias / 2 ? contrato.Monto * 2 : contrato.Monto;
+
+            _repoContrato.TerminarAnticipado(contrato.IdContrato, fechaAnticipada, multa);
+
+            TempData["SuccessMessage"] = $"Contrato finalizado anticipadamente. Multa aplicada: {multa:C}";
+            return RedirectToAction(nameof(Index), new { idContrato });
         }
     }
 }

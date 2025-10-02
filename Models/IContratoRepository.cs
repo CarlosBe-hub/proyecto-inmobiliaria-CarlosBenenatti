@@ -1,4 +1,3 @@
-
 using ProyectoInmobiliaria.Models;
 
 namespace ProyectoInmobiliaria.Repository
@@ -15,6 +14,11 @@ namespace ProyectoInmobiliaria.Repository
         // Método para validar contratos asociados a un inmueble
         IList<Contrato> BuscarPorInmueble(int inmuebleId);
 
-         (IList<Contrato> Contratos, int TotalCount) ListarPaginado(int pageNumber, int pageSize);
+        (IList<Contrato> Contratos, int TotalCount) ListarPaginado(int pageNumber, int pageSize);
+
+        IEnumerable<Contrato> ListarVigentes(DateTime fechaDesde, DateTime fechaHasta);
+
+        void TerminarAnticipado(int contratoId, DateTime fechaAnticipada, decimal multa);
+        void ReactivarContrato(int contratoId);
     }
 }

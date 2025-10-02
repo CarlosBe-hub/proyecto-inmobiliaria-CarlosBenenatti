@@ -19,20 +19,16 @@ namespace ProyectoInmobiliaria.Models
         [Display(Name = "Fecha de Fin")]
         public DateTime FechaFin { get; set; }
 
-        [DataType(DataType.Date)]
-        [Display(Name = "Fecha Fin Anticipada")]
-        public DateTime? FechaFinAnticipada { get; set; }
-
         [Required(ErrorMessage = "El monto mensual es obligatorio")]
         [Range(1, double.MaxValue, ErrorMessage = "El monto debe ser mayor que 0")]
         [DataType(DataType.Currency)]
         [Display(Name = "Monto Mensual")]
         public decimal Monto { get; set; }
 
-        [Required]
-        [StringLength(20)]
-        [Display(Name = "Estado del Contrato")]
-        public string Estado { get; set; } = "Activo";
+        [Required(ErrorMessage = "El estado es obligatorio")]
+        [StringLength(20, ErrorMessage = "El estado no puede superar los 20 caracteres")]
+        [RegularExpression("^(Activo|Inactivo|Finalizado)$", ErrorMessage = "El estado debe ser Activo, Inactivo o Finalizado")]
+        public string? Estado { get; set; } = "Activo";
 
         // Relación con Inmueble
         [Required(ErrorMessage = "Debe seleccionar un inmueble")]
@@ -52,6 +48,16 @@ namespace ProyectoInmobiliaria.Models
         [BindNever]
         public Inquilino? Inquilino { get; set; }
 
+        // Propiedades para terminar anticipado
+        [DataType(DataType.Date)]
+        [Display(Name = "Fecha de Finalización Anticipada")]
+        [Column("FechaFinAnticipada")]
+        public DateTime? FechaAnticipada { get; set; }
+
+        [DataType(DataType.Currency)]
+        [Display(Name = "Multa")]
+        public decimal? Multa { get; set; }
+
         // Validacion
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {
@@ -62,13 +68,12 @@ namespace ProyectoInmobiliaria.Models
                     new[] { nameof(FechaInicio), nameof(FechaFin) });
             }
 
-            if (FechaFinAnticipada.HasValue && FechaFinAnticipada < FechaInicio)
+            if (FechaAnticipada.HasValue && FechaAnticipada < FechaInicio)
             {
                 yield return new ValidationResult(
-                    "La fecha fin anticipada no puede ser menor que la fecha de inicio.",
-                    new[] { nameof(FechaFinAnticipada) });
+                    "La fecha de finalización anticipada no puede ser anterior a la fecha de inicio.",
+                    new[] { nameof(FechaAnticipada) });
             }
         }
     }
 }
-
