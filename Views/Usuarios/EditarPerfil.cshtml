@@ -1,0 +1,75 @@
+@model ProyectoInmobiliaria.Models.Usuario
+
+@{
+    ViewData["Title"] = "Editar Perfil";
+}
+
+<h2>@ViewData["Title"]</h2>
+
+<!-- Mostrar mensajes de éxito o error -->
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">
+        <strong>Éxito!</strong> @TempData["SuccessMessage"]
+    </div>
+}
+else if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">
+        <strong>Error!</strong> @TempData["ErrorMessage"]
+    </div>
+}
+
+<form method="post" enctype="multipart/form-data">
+    <div class="form-group">
+        <label for="Nombre">Nombre</label>
+        <input type="text" class="form-control" id="Nombre" name="Nombre" value="@Model.Nombre" required />
+    </div>
+    <div class="form-group">
+        <label for="Apellido">Apellido</label>
+        <input type="text" class="form-control" id="Apellido" name="Apellido" value="@Model.Apellido" required />
+    </div>
+    <div class="form-group">
+        <label for="Email">Email</label>
+        <input type="email" class="form-control" id="Email" name="Email" value="@Model.Email" required />
+    </div>
+
+    <!-- Avatar -->
+    <div class="form-group">
+        <label for="nuevoAvatar">Avatar</label>
+        <input type="file" class="form-control-file" id="nuevoAvatar" name="nuevoAvatar" accept="image/*" />
+        <div class="mt-2">
+            <!-- Mostrar el avatar actual o el nuevo seleccionado -->
+            <img id="avatarPreview" src="@Model.Avatar" alt="Avatar" class="img-thumbnail" style="max-width: 150px;" />
+        </div>
+    </div>
+
+    <div class="form-group form-check">
+        <input type="checkbox" class="form-check-input" id="eliminarAvatar" name="eliminarAvatar" />
+        <label class="form-check-label" for="eliminarAvatar">Eliminar avatar</label>
+    </div>
+
+    <div class="form-group">
+        <label for="nuevaClave">Nueva Contraseña (Opcional)</label>
+        <input type="password" class="form-control" id="nuevaClave" name="nuevaClave" />
+    </div>
+
+    <button type="submit" class="btn btn-primary">Actualizar Perfil</button>
+</form>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function () {
+        // Al seleccionar una nueva imagen de avatar
+        $('#nuevoAvatar').change(function (e) {
+            // Crear un objeto FileReader para leer la imagen seleccionada
+            var reader = new FileReader();
+            reader.onload = function (e) {
+                // Actualizar el avatar con la imagen seleccionada
+                $('#avatarPreview').attr('src', e.target.result);
+            };
+            // Leer el archivo seleccionado como URL de datos
+            reader.readAsDataURL(this.files[0]);
+        });
+    });
+</script>

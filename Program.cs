@@ -1,4 +1,8 @@
 using ProyectoInmobiliaria.Repository;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using BCrypt.Net; 
+using ProyectoInmobiliaria.Models;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -28,8 +32,22 @@ builder.Services.AddScoped<IContratoRepository>(sp =>
 builder.Services.AddScoped<IPagoRepository>(sp =>
     new RepositorioPago(builder.Configuration));
 
-// 4. Agregar MVC
+// Registrar RepositorioUsuario
+builder.Services.AddScoped<IRepositorioUsuario>(sp =>
+    new RepositorioUsuario(connectionString)); // Registrar el repositorio de usuarios
+
+// 4. Agregar soporte para la autenticación y autorización
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.LoginPath = "/Usuarios/Login"; // Cambiado a /Usuarios/Login
+        options.LogoutPath = "/Usuarios/Logout"; // Ruta de logout
+        options.SlidingExpiration = true; 
+    });
+
+// Agregar servicios de MVC
 builder.Services.AddControllersWithViews();
+
 
 var app = builder.Build();
 
@@ -45,13 +63,15 @@ app.UseStatusCodePagesWithReExecute("/Error/{0}");
 
 app.UseHttpsRedirection();
 app.UseRouting();
+app.UseAuthentication(); 
 app.UseAuthorization();
 
-app.MapStaticAssets();
+app.UseStaticFiles(); // Para servir recursos estáticos
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}")
+    pattern: "{controller=Usuarios}/{action=Login}/{id?}")
     .WithStaticAssets();
 
 app.Run();
+

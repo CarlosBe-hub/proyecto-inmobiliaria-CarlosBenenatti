@@ -5,9 +5,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using ProyectoInmobiliaria.Models;
 using ProyectoInmobiliaria.Repository;
+using Microsoft.AspNetCore.Authorization;
 
 namespace ProyectoInmobiliaria.Controllers
 {
+    [Authorize] 
     public class ContratoController : Controller
     {
         private readonly IContratoRepository _repo;
@@ -184,6 +186,7 @@ namespace ProyectoInmobiliaria.Controllers
         }
 
         // GET: Contrato/Delete
+        [Authorize(Roles = "Administrador")]
         public IActionResult Delete(int id)
         {
             var contrato = _repo.ObtenerPorId(id);
@@ -195,6 +198,7 @@ namespace ProyectoInmobiliaria.Controllers
         // POST: Contrato/Delete
         [HttpPost, ActionName("DeleteConfirmed")]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Administrador")]
         public IActionResult DeleteConfirmed(int id)
         {
             _repo.Baja(id);

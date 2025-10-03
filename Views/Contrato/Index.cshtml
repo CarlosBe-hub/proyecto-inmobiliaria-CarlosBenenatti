@@ -104,9 +104,14 @@
                     <a asp-action="Edit" asp-route-id="@c.IdContrato" class="btn btn-warning btn-sm text-dark">
                         <i class="fa fa-pencil-alt"></i> Editar
                     </a>
-                    <a asp-action="Delete" asp-route-id="@c.IdContrato" class="btn btn-danger btn-sm">
-                        <i class="fa fa-trash"></i> Eliminar
-                    </a>
+
+                    @if (!User.IsInRole("Empleado"))
+                    {
+                        <a asp-action="Delete" asp-route-id="@c.IdContrato" class="btn btn-danger btn-sm">
+                            <i class="fa fa-trash"></i> Eliminar
+                        </a>
+                    }
+
                     <a asp-action="Index" asp-controller="Pago" asp-route-idContrato="@c.IdContrato" class="btn btn-secondary btn-sm">
                         <i class="fa fa-credit-card"></i> Ver Pagos
                     </a>

@@ -17,17 +17,16 @@
     </a>
 </p>
 
-
 <form asp-action="Index" method="get" class="row mb-3 g-2">
     <div class="col-md-4">
         <input type="text" name="q" value="@q" class="form-control" placeholder="Buscar por nombre, apellido o documento..." />
     </div>
     <div class="col-md-3">
         <select name="activos" class="form-select">
-           <option value="">-- Todos --</option>
-           <option value="true" selected="@(activos == true)">Activos</option>
-           <option value="false" selected="@(activos == false)">Dados de baja</option>
-</select>
+            <option value="">-- Todos --</option>
+            <option value="true" selected="@(activos == true)">Activos</option>
+            <option value="false" selected="@(activos == false)">Dados de baja</option>
+        </select>
     </div>
     <div class="col-md-2">
         <button type="submit" class="btn btn-success w-100">
@@ -63,9 +62,14 @@
                         <a asp-action="Edit" asp-route-id="@i.IdInquilino" class="btn btn-warning btn-sm text-dark">
                             <i class="bi bi-pencil-square"></i> Editar
                         </a>
-                        <a asp-action="Delete" asp-route-id="@i.IdInquilino" class="btn btn-danger btn-sm">
-                            <i class="bi bi-trash"></i> Eliminar
-                        </a>
+
+                        @if (!User.IsInRole("Empleado"))
+                        {
+                            <!-- Validación para ocultar el botón de eliminar -->
+                            <a asp-action="Delete" asp-route-id="@i.IdInquilino" class="btn btn-danger btn-sm">
+                                <i class="bi bi-trash"></i> Eliminar
+                            </a>
+                        }
                     </td>
                 </tr>
             }

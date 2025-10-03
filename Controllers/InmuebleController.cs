@@ -3,9 +3,11 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using ProyectoInmobiliaria.Models;
 using ProyectoInmobiliaria.Repository;
 using System.Linq;
+using Microsoft.AspNetCore.Authorization;
 
 namespace ProyectoInmobiliaria.Controllers
 {
+    [Authorize]
     public class InmuebleController : Controller
     {
         private readonly IInmuebleRepository _repo;
@@ -126,6 +128,7 @@ namespace ProyectoInmobiliaria.Controllers
         }
 
         // GET: Inmueble/Delete/5
+        [Authorize(Roles = "Administrador")]
         public IActionResult Delete(int id)
         {
             var inmueble = _repo.ObtenerPorId(id);
@@ -145,6 +148,7 @@ namespace ProyectoInmobiliaria.Controllers
         // POST: Inmueble/DeleteConfirmed/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Administrador")]
         public IActionResult DeleteConfirmed(int id)
         {
             var contratos = _repoContrato.BuscarPorInmueble(id);

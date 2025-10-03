@@ -4,7 +4,7 @@
     ViewData["Title"] = "Inmuebles";
 
     // Lista de estados 
-    var estados = new List<string> { "Disponible", "En Mantenimiento"}; 
+    var estados = new List<string> { "Disponible", "En Mantenimiento" }; 
     var estadoSeleccionado = ViewBag.EstadoSeleccionado as string;
     int paginaActual = ViewBag.PaginaActual ?? 1;
     int totalPaginas = ViewBag.TotalPaginas ?? 1;
@@ -83,9 +83,15 @@
                     <a asp-action="Edit" asp-route-id="@item.IdInmueble" class="btn btn-warning btn-sm text-dark">
                         <i class="bi bi-pencil-square"></i> Editar
                     </a>
-                    <a asp-action="Delete" asp-route-id="@item.IdInmueble" class="btn btn-danger btn-sm">
-                        <i class="bi bi-trash"></i> Eliminar
-                    </a>
+
+                    @if (!User.IsInRole("Empleado"))
+                    {
+                        <!-- Validación para ocultar el botón de eliminar -->
+                        <a asp-action="Delete" asp-route-id="@item.IdInmueble" class="btn btn-danger btn-sm">
+                            <i class="bi bi-trash"></i> Eliminar
+                        </a>
+                    }
+
                     <!-- Botón para ver contratos asociados al inmueble -->
                     <a asp-action="Contratos" asp-route-id="@item.IdInmueble" class="btn btn-primary btn-sm">
                         <i class="bi bi-file-earmark-text"></i> Contratos
